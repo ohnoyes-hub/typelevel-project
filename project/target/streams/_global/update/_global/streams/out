@@ -1,4 +1,3 @@
-[warn] sbt-native-packager_2.12_1.0-1.9.11.jar no longer exists at /home/ohnoyes/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/sbt/sbt-native-packager_2.12_1.0/1.9.11/sbt-native-packager_2.12_1.0-1.9.11.jar
-[debug] not up to date. inChanged = false, force = false
-[debug] Updating ProjectRef(uri("file:/home/ohnoyes/typelevel-project/project/"), "typelevel-project-build")...
-[debug] Done updating ProjectRef(uri("file:/home/ohnoyes/typelevel-project/project/"), "typelevel-project-build")
+[0m[[0m[0mdebug[0m] [0m[0mnot up to date. inChanged = true, force = false[0m
+[0m[[0m[0mdebug[0m] [0m[0mUpdating ProjectRef(uri("file:/home/ohnoyes/typelevel-project/project/"), "typelevel-project-build")...[0m
+[0m[[0m[0mdebug[0m] [0m[0mDone updating ProjectRef(uri("file:/home/ohnoyes/typelevel-project/project/"), "typelevel-project-build")[0m
