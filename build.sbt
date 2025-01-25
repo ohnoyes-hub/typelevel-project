@@ -1,7 +1,7 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 lazy val ohnoyes = "com.ohnoyes"
-lazy val scala3Version = "3.3.4"
+lazy val scala3Version = "3.2.1"
 
 lazy val circeVersion  = "0.14.0"
 lazy val catsEffectVersion          = "3.3.14"
