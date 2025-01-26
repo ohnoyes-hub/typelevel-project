@@ -126,8 +126,14 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/EmberConfig.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/EmberConfig$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/EmberConfig$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/syntax$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/syntax$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/syntax.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/syntax.tasty[0m
 [0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/EmberConfig.tasty[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/EmberConfig.tasty[0m
+[0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/syntax.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/syntax.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	com/ohnoyes/jobsboard/config/EmberConfig$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ohnoyes/typelevel-project/target/scala-3.2.1/classes/com/ohnoyes/jobsboard/config/EmberConfig$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mDone packaging.[0m

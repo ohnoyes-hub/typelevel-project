@@ -1,7 +1,5 @@
-[error] -- Error: /home/ohnoyes/typelevel-project/src/main/scala/com/ohnoyes/jobsboard/Application.scala:31:85 
-[error] 31 |            case Left(errors) => IO.raiseError[Nothing](ConfigReaderException(errors))
-[error]    |                                                                                     ^
-[error]    |                         No ClassTag available for A
-[error]    |
-[error]    |                         where:    A is a type variable with constraint 
+[error] -- [E040] Syntax Error: /home/ohnoyes/typelevel-project/src/main/scala/com/ohnoyes/jobsboard/config/syntax.scala:13:90 
+[error] 13 |        def loadF[F[_], A](using reader: ConfigReader[A], F: MonadThrow[F], tag: ClassTag[]): F[A] =
+[error]    |                                                                                          ^
+[error]    |                                   an identifier expected, but ']' found
 [error] one error found

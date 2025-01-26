@@ -1,4 +1,16 @@
-[0m[[0m[31merror[0m] [0m[0mjava.lang.Exception: Failed to load configuration: ConfigReaderFailures(ConvertFailure(KeyNotFound(host,Set()),None,host),ConvertFailure(KeyNotFound(port,Set()),None,port))[0m
-[0m[[0m[31merror[0m] [0m[0m	at com.ohnoyes.jobsboard.Application$.run(Application.scala:30)[0m
-[0m[[0m[31merror[0m] [0m[0m	at run$ @ com.ohnoyes.jobsboard.Application$.run(Application.scala:23)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrunMain[0m) java.lang.Exception: Failed to load configuration: ConfigReaderFailures(ConvertFailure(KeyNotFound(host,Set()),None,host),ConvertFailure(KeyNotFound(port,Set()),None,port))[0m
+[0m[[0m[31merror[0m] [0m[0mpureconfig.error.ConfigReaderException: Cannot convert configuration to a com.ohnoyes.jobsboard.config.EmberConfig. Failures are:[0m
+[0m[[0m[31merror[0m] [0m[0m  at 'host':[0m
+[0m[[0m[31merror[0m] [0m[0m    - Key not found: 'host'.[0m
+[0m[[0m[31merror[0m] [0m[0m  at 'port':[0m
+[0m[[0m[31merror[0m] [0m[0m    - Key not found: 'port'.[0m
+[0m[[0m[31merror[0m] [0m[0m[0m
+[0m[[0m[31merror[0m] [0m[0m	at pureconfig.error.ConfigReaderException$.apply(ConfigReaderException.scala:9)[0m
+[0m[[0m[31merror[0m] [0m[0m	at com.ohnoyes.jobsboard.config.syntax$.loadF$$anonfun$1(syntax.scala:15)[0m
+[0m[[0m[31merror[0m] [0m[0m	at flatMap @ com.ohnoyes.jobsboard.config.syntax$.loadF(syntax.scala:17)[0m
+[0m[[0m[31merror[0m] [0m[0m	at flatMap @ com.ohnoyes.jobsboard.Application$.run(Application.scala:38)[0m
+[0m[[0m[31merror[0m] [0m[0m	at run$ @ com.ohnoyes.jobsboard.Application$.run(Application.scala:27)[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrunMain[0m) pureconfig.error.ConfigReaderException: Cannot convert configuration to a com.ohnoyes.jobsboard.config.EmberConfig. Failures are:[0m
+[0m[[0m[31merror[0m] [0m[0m  at 'host':[0m
+[0m[[0m[31merror[0m] [0m[0m    - Key not found: 'host'.[0m
+[0m[[0m[31merror[0m] [0m[0m  at 'port':[0m
+[0m[[0m[31merror[0m] [0m[0m    - Key not found: 'port'.[0m

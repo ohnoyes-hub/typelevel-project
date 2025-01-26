@@ -1,17 +1,19 @@
 package com.ohnoyes.jobsboard
 
-import cats.effect.*
 import org.http4s.*
 import org.http4s.dsl.*
 import org.http4s.dsl.impl.*
 import org.http4s.server.*
-import cats.*
+import cats.effect.*
 import cats.effect.IO
+import cats.*
+import cats.implicits.*
 import org.http4s.ember.server.EmberServerBuilder
 
 import com.ohnoyes.jobsboard.http.routes.HealthRoutes
 import pureconfig.ConfigSource
 import com.ohnoyes.jobsboard.config.*
+import com.ohnoyes.jobsboard.config.syntax.*
 import com.typesafe.config.Config
 import pureconfig.error.ConfigReaderException
 
@@ -26,17 +28,14 @@ object Application extends IOApp.Simple {
 
     val configSource = ConfigSource.default.load[EmberConfig]
 
-    override def run: IO[Unit] = 
-        configSource match {
-            case Left(errors) => IO.raiseError[Nothing](ConfigReaderException(errors))
-            case Right(config) => 
-                EmberServerBuilder
-                    .default[IO]
-                    .withHost(config.host) // String, but need a Host
-                    .withPort(config.port) // String, but need a Port
-                    .withHttpApp(HealthRoutes[IO].routes.orNotFound)
-                    .build
-                    .use(_ => IO("Server ready, OH NOES YES!") *> IO.never)
+    override def run: IO[Unit] = ConfigSource.default.loadF[IO, EmberConfig].flatMap { config => 
+        EmberServerBuilder
+            .default[IO]
+            .withHost(config.host) 
+            .withPort(config.port)
+            .withHttpApp(HealthRoutes[IO].routes.orNotFound)
+            .build
+            .use(_ => IO("Server ready, OH NOES YES!") *> IO.never)
         }
         
 }
