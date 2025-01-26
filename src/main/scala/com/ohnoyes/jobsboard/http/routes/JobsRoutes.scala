@@ -9,14 +9,16 @@ import org.http4s.dsl.impl.*
 import org.http4s.server.*
 import cats.effect.* // for Concurrent (Ref and Deferred)
 import cats.implicits.*
+import org.typelevel.log4cats.Logger
 
 import scala.collection.mutable
 import java.util.UUID
 import com.ohnoyes.jobsboard.domain.job.*
 import com.ohnoyes.jobsboard.http.responses.*
+import org.checkerframework.checker.units.qual.s
 
 
-class JobsRoutes[F[_]: Concurrent] private extends Http4sDsl[F] {
+class JobsRoutes[F[_]: Concurrent: Logger] private extends Http4sDsl[F] {
 
     // "database"
     private val database = mutable.Map[UUID, Job]()
@@ -45,12 +47,16 @@ class JobsRoutes[F[_]: Concurrent] private extends Http4sDsl[F] {
             active = true
         ).pure[F]
 
-
+    import com.ohnoyes.jobsboard.logging.syntax.*
     private val createJobRoute: HttpRoutes[F] = HttpRoutes.of[F] { 
         case req @ POST -> Root / "create" => 
             for {
-                jobInfo <- req.as[JobInfo] // magic
+                _ <- Logger[F].info("Creating a new job")
+                jobInfo <- req.as[JobInfo].logError(e => s"Failed to parse job info: $e")
+                _ <- Logger[F].info(s"Trying to add job: $jobInfo")
                 job <- createJob(jobInfo)
+                _ <- Logger[F].info(s"Job created: $job")
+                _ = database.put(job.id, job).pure[F]
                 resp <- Created(job)
             } yield resp
     }
@@ -90,5 +96,5 @@ class JobsRoutes[F[_]: Concurrent] private extends Http4sDsl[F] {
 }
 
 object JobsRoutes {
-    def apply[F[_]: Concurrent] = new JobsRoutes[F]
+    def apply[F[_]: Concurrent: Logger] = new JobsRoutes[F]
 }
