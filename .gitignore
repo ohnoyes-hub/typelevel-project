@@ -16,3 +16,6 @@ metals.sbt
 
 # Visual Studio Code settings
 .vscode/
+
+# target
+target/

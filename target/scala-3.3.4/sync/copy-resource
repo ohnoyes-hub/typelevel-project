@@ -1,1 +1,0 @@
-[[{"${BASE}/src/main/resources/dumpedFile.txt":["${BASE}/target/scala-3.3.4/classes/dumpedFile.txt"]},{"${BASE}/target/scala-3.3.4/classes/dumpedFile.txt":["${BASE}/src/main/resources/dumpedFile.txt"]}],{"${BASE}/src/main/resources/dumpedFile.txt":{"file":"file:///home/ohnoyes/typelevel-project/src/main/resources/dumpedFile.txt","lastModified":1737726459602}}]
