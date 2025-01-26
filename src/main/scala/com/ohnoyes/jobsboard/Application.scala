@@ -10,7 +10,7 @@ import cats.*
 import cats.implicits.*
 import org.http4s.ember.server.EmberServerBuilder
 
-import com.ohnoyes.jobsboard.http.routes.HealthRoutes
+import com.ohnoyes.jobsboard.http.HttpApi
 import pureconfig.ConfigSource
 import com.ohnoyes.jobsboard.config.*
 import com.ohnoyes.jobsboard.config.syntax.*
@@ -33,7 +33,7 @@ object Application extends IOApp.Simple {
             .default[IO]
             .withHost(config.host) 
             .withPort(config.port)
-            .withHttpApp(HealthRoutes[IO].routes.orNotFound)
+            .withHttpApp(HttpApi[IO].endpoints.orNotFound)
             .build
             .use(_ => IO("Server ready, OH NOES YES!") *> IO.never)
         }
