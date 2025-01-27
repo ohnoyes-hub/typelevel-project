@@ -81,8 +81,8 @@ class JobsRoutes[F[_]: Concurrent: Logger] private extends Http4sDsl[F] {
             database.get(id) match {
                 case Some(job) => 
                     for {
-                        jobInfo <- req.as[JobInfo]
-                        _ = database.remove(id).pure[F]
+                        //jobInfo <- req.as[JobInfo]
+                        _ <- database.remove(id).pure[F]
                         resp <- Ok()
                     } yield resp
                 case None => NotFound(FailureResponse(s"Oh no, job $id not found. Cannot update"))
