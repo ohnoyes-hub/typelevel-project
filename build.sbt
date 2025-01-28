@@ -1,7 +1,7 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 lazy val ohnoyes = "com.ohnoyes"
-lazy val scala3Version = "3.2.1"
+lazy val scala3Version = "3.3.4"
 
 lazy val circeVersion  = "0.14.0"
 lazy val catsEffectVersion          = "3.3.14"
@@ -45,4 +45,5 @@ lazy val server = (project in file("."))
       "org.testcontainers" % "postgresql"                    % testContainerVersion       % Test,
       "ch.qos.logback"     % "logback-classic"               % logbackVersion             % Test
     ),
+    Compile / mainClass := Some("com.ohnoyes.jobsboard.Application")
   )

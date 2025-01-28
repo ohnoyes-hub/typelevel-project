@@ -20,27 +20,6 @@ trait  Jobs[F[_]] {
     def delete(id: UUID): F[Int]
 }
 
-/*
-id: UUID,
-date: Long,
-ownerEmail: String,
-company: String,
-title: String,
-description: String,
-externalUrl: String,
-remote: Boolean,
-location: String,
-salaryLow: Option[Int],
-salaryHi: Option[Int],
-currency: Option[String],
-country: Option[String],
-tags: Option[List[String
-image: Option[String],
-seniority: Option[String],
-other: Option[String],
-active: Boolean
- */
-
 class LiveJobs[F[_]: MonadCancelThrow] private (xa: Transactor[F]) extends Jobs[F] {
     override def create(ownerEmail: String, jobInfo: JobInfo): F[UUID] =
         sql"""
@@ -165,6 +144,7 @@ class LiveJobs[F[_]: MonadCancelThrow] private (xa: Transactor[F]) extends Jobs[
         .run
         .transact(xa)
         .flatMap(_ => find(id)) // return updated job
+        
     override def delete(id: UUID): F[Int] = 
         sql"""
             DELETE FROM jobs
