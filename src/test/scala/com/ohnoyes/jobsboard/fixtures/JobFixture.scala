@@ -1,3 +1,5 @@
+package com.ohnoyes.jobsboard.fixtures
+
 import cats.syntax.all.*
 import com.ohnoyes.jobsboard.domain.job.*
 
