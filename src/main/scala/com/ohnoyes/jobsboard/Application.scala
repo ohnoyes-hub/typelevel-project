@@ -17,7 +17,6 @@ import com.ohnoyes.jobsboard.config.*
 import com.ohnoyes.jobsboard.config.syntax.*
 import com.typesafe.config.Config
 import pureconfig.error.ConfigReaderException
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.http4s.server.middleware.ErrorAction.httpApp
 
 

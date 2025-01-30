@@ -12,6 +12,7 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 
 import com.ohnoyes.jobsboard.domain.job.*
+import com.ohnoyes.jobsboard.domain.pagination.*
 import com.ohnoyes.jobsboard.core.*
 import com.ohnoyes.jobsboard.fixtures.* 
 
@@ -36,6 +37,10 @@ class JobRoutesSpec
 
         override def all(): IO[List[Job]] = 
             IO.pure(List(AwesomeJob))
+
+        override def all(filter: JobFilter, pagination: Pagination): IO[List[Job]] = 
+            if (filter.remote) IO.pure(List())
+            else IO.pure(List(AwesomeJob))
 
         override def find(id: UUID): IO[Option[Job]] = 
             if (id == AwesomeJobUuid) IO.pure(Some(AwesomeJob))
@@ -77,11 +82,25 @@ class JobRoutesSpec
             for {
                 response <- jobRoutes.orNotFound.run(
                     Request(method = Method.POST, uri = uri"/jobs")
+                        .withEntity(JobFilter())
                 )
                 retrieved <- response.as[List[Job]]
             } yield {
                 response.status shouldBe Status.Ok
                 retrieved shouldBe List(AwesomeJob)
+            }
+        }
+
+        "should return all jobs that satisfy a filter" in {
+            for {
+                response <- jobRoutes.orNotFound.run(
+                    Request(method = Method.POST, uri = uri"/jobs")
+                        .withEntity(JobFilter(remote = true))
+                )
+                retrieved <- response.as[List[Job]]
+            } yield {
+                response.status shouldBe Status.Ok
+                retrieved shouldBe List()
             }
         }
 

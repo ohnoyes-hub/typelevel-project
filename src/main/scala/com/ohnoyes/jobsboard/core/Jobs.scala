@@ -3,24 +3,30 @@ package com.ohnoyes.jobsboard.core
 import cats.*
 import cats.effect.*
 import cats.implicits.*
-import com.ohnoyes.jobsboard.domain.job.*
-import java.util.UUID
 import doobie.*
 import doobie.implicits.* 
 import doobie.util.* 
 import doobie.postgres.implicits.*
+import java.util.UUID
+
+import com.ohnoyes.jobsboard.domain.job.*
+import com.ohnoyes.jobsboard.domain.pagination.*
+import org.typelevel.log4cats.Logger
+import com.ohnoyes.jobsboard.logging.syntax.*
+
 
 trait  Jobs[F[_]] {
     // "algebra"
     // CRUD operations
     def create(ownerEmail: String, jobInfo: JobInfo): F[UUID]
-    def all(): F[List[Job]]
+    def all(): F[List[Job]] // TODO: wrangle the all() methods
+    def all(filter: JobFilter, pagination: Pagination): F[List[Job]]
     def find(id: UUID): F[Option[Job]]
     def update(id: UUID, jobInfo: JobInfo): F[Option[Job]]
     def delete(id: UUID): F[Int]
 }
 
-class LiveJobs[F[_]: MonadCancelThrow] private (xa: Transactor[F]) extends Jobs[F] {
+class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) extends Jobs[F] {
     override def create(ownerEmail: String, jobInfo: JobInfo): F[UUID] =
         sql"""
             INSERT INTO jobs(
@@ -91,6 +97,68 @@ class LiveJobs[F[_]: MonadCancelThrow] private (xa: Transactor[F]) extends Jobs[
         .query[Job]
         .to[List]
         .transact(xa)
+
+    override def all(filter: JobFilter, pagination: Pagination): F[List[Job]] = 
+        val fragment: Fragment = 
+            fr"""
+                SELECT
+                    id,
+                    date,
+                    ownerEmail,
+                    company,
+                    title,
+                    description,
+                    externalUrl,
+                    remote,
+                    location,
+                    salaryLow,
+                    salaryHi,
+                    currency,
+                    country,
+                    tags,
+                    image,
+                    seniority,
+                    other,
+                    active
+            """
+
+        val fromFragment: Fragment = 
+            fr"FROM jobs"
+        val whereFragment: Fragment = Fragments.whereAndOpt(
+            filter.companies.toNel // Option[NonEmptyList[String]] => Option[Fragment]
+                .map(companies => Fragments.in(fr"company", companies) /* fr"company in ($companies)" */), // Option["WHERE company in [filter.companies]"]
+            filter.locations.toNel
+                .map(locations => Fragments.in(fr"location", locations)),
+            filter.seniorities.toNel
+                .map(seniorities => Fragments.in(fr"seniority", seniorities)),
+            filter.countries.toNel
+                .map(countries => Fragments.in(fr"country", countries)),
+            filter.tags.toNel.map(tags => // filter.tags and row's tags
+                Fragments.or(tags.toList.map(tag => fr"$tag=any(tags)"): _*)
+            ),
+            filter.maxSalary.map(maxSalary => fr"salaryHi > $maxSalary"),
+            filter.remote.some.map(remote => fr"remote = $remote")
+        )
+        val paginationFragment: Fragment =
+            fr"ORDER BY id LIMIT ${pagination.limit} OFFSET ${pagination.offset}"
+            /*
+            WHERE company in [filter.companies] 
+            AND location in [filter.locations]
+            AND seniority in [filter.seniorities]
+            AND country in [filter.countries]
+            AND (
+                tag1=any(tags) 
+                OR tag2=any(tags)
+                OR ... (for every tag in filter.tags
+            )
+            AND salaryHi > filter.maxSalary
+            AND remote = [filter.remote]
+            """
+            */
+        val statement = fragment|+| fromFragment |+|whereFragment |+| paginationFragment
+        
+        Logger[F].info(statement.toString) *>
+        statement.query[Job].to[List].transact(xa).logError(e => s"Failed query: ${e.getMessage}")     
 
     override def find(id: UUID): F[Option[Job]] = 
         sql"""
@@ -219,5 +287,6 @@ object LiveJobs {
         )
     }
 
-    def apply[F[_]: MonadCancelThrow](xa: Transactor[F]): F[LiveJobs[F]] = new LiveJobs[F](xa).pure[F]
+    def apply[F[_]: MonadCancelThrow: Logger](xa: Transactor[F]): F[LiveJobs[F]] = 
+        new LiveJobs[F](xa).pure[F]
 }

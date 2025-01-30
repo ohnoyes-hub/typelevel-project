@@ -15,6 +15,7 @@ import com.ohnoyes.jobsboard.logging.syntax.*
 import scala.collection.mutable
 import java.util.UUID
 import com.ohnoyes.jobsboard.domain.job.*
+import com.ohnoyes.jobsboard.domain.pagination.*
 import com.ohnoyes.jobsboard.http.responses.*
 import com.ohnoyes.jobsboard.http.validation.syntax.*
 import org.checkerframework.checker.units.qual.s
@@ -23,19 +24,19 @@ import com.ohnoyes.jobsboard.core.*
 
 class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F]) extends HttpValidationDsl[F] {
 
-    // refined types/library
-    // not used: checked at compile time - increase compile time
-    // hard to extend refined types
-    // lowers developer experience "coerce"
+    object OffsetQueryParam extends OptionalQueryParamDecoderMatcher[Int]("offset")
+    object LimitQueryParam extends OptionalQueryParamDecoderMatcher[Int]("limit")
 
 
-    // POST /jobs?offset=x&limit=y { filter } (with pagination: ?offset=x&limit=y)
+    // POST /jobs?limit=x&offset=y { filter } ( pagination)
     // TODO: add query params and filters.
-    private val allJobsRoutes: HttpRoutes[F] = HttpRoutes.of[F] { case POST -> Root => 
-        for {
-            jobsList <- jobs.all()
-            resp <- Ok(jobsList)
-        } yield resp
+    private val allJobsRoutes: HttpRoutes[F] = HttpRoutes.of[F] { 
+        case req@  POST -> Root :? LimitQueryParam(limit) +& OffsetQueryParam(offset)   => 
+            for {
+                filter <- req.as[JobFilter]
+                jobsList <- jobs.all(filter, Pagination(limit, offset))
+                resp <- Ok(jobsList)
+            } yield resp
     }
 
     // GET /jobs/uuid
