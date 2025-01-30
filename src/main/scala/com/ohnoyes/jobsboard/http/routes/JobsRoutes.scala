@@ -16,14 +16,17 @@ import scala.collection.mutable
 import java.util.UUID
 import com.ohnoyes.jobsboard.domain.job.*
 import com.ohnoyes.jobsboard.http.responses.*
+import com.ohnoyes.jobsboard.http.validation.syntax.*
 import org.checkerframework.checker.units.qual.s
 import com.ohnoyes.jobsboard.core.*
 
 
-class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F]) extends Http4sDsl[F] {
+class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F]) extends HttpValidationDsl[F] {
 
-    // In-memory database
-
+    // refined types/library
+    // not used: checked at compile time - increase compile time
+    // hard to extend refined types
+    // lowers developer experience "coerce"
 
 
     // POST /jobs?offset=x&limit=y { filter } (with pagination: ?offset=x&limit=y)
@@ -43,40 +46,29 @@ class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F]) extends Http4
         }
     }
     
-    // POST /jobs { jobInfo}
-    // private def createJob(jobInfo: JobInfo): F[Job] = 
-    //     Job(
-    //         id = UUID.randomUUID(), 
-    //         date = System.currentTimeMillis(),
-    //         ownerEmail = "TODO@ohnoyes.io",
-    //         jobInfo = jobInfo,
-    //         active = true
-    //     ).pure[F]
-
+    // POST /jobs/create { jobInfo}
     private val createJobRoute: HttpRoutes[F] = HttpRoutes.of[F] { 
         case req @ POST -> Root / "create" => 
-            for {
-                // _ <- Logger[F].info("Creating a new job")
-                jobInfo <- req.as[JobInfo].logError(e => s"Failed to parse job info: $e")
-                //_ <- Logger[F].info(s"Trying to add job: $jobInfo")
-                jobId <- jobs.create("TODO@ohnoyes.xyz", jobInfo)
-                // _ <- Logger[F].info(s"Job created: $job")
-                // _ = database.put(job.id, job).pure[F]
-                resp <- Created(jobId)
-            } yield resp
+            req.validate[JobInfo] { jobInfo =>
+                for {
+                    jobId <- jobs.create("TODO@ohnoyes.xyz", jobInfo)
+                    resp <- Created(jobId)
+                } yield resp
+            }
     }
 
     // PUT /jobs/uuid { jobInfo }
     private val updateJobRoute: HttpRoutes[F] = HttpRoutes.of[F] { 
         case req @ PUT -> Root / UUIDVar(id) => 
-            for {
-                jobInfo <- req.as[JobInfo] // http payload
-                maybeNewJob <- jobs.update(id, jobInfo)
-                resp <- maybeNewJob match {
-                    case Some(job) => Ok()
-                    case None => NotFound(FailureResponse(s"Oh no, job $id not found. Cannot update"))
-                }
-            } yield resp
+            req.validate[JobInfo] { jobInfo =>
+                for {
+                    maybeNewJob <- jobs.update(id, jobInfo)
+                    resp <- maybeNewJob match {
+                        case Some(job) => Ok()
+                        case None => NotFound(FailureResponse(s"Oh no, job $id not found. Cannot update"))
+                    }
+                } yield resp
+            }
     }
 
     // DELETE /jobs/uuid
