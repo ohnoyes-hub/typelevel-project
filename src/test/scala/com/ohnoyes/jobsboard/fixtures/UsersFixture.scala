@@ -8,7 +8,7 @@ trait UsersFixture {
 
   val Daniel = User(
     "daniel@rockthejvm.com",
-    "rockthejvm",
+    "$2a$10$RUrc4HAIsSSb908/h7w0nO4gZn.NrGjROXHxFlxY9lX8dQTYxQcLW", // "rockthejvm"
     Some("Daniel"),
     Some("Ciocirlan"),
     Some("Rock the JVM"),
@@ -19,7 +19,7 @@ trait UsersFixture {
 
   val Riccardo = User(
     "riccardo@rockthejvm.com",
-    "riccardorulez",
+    "$2a$10$DDfeZDKeWIJiszswg7ESHurcqD8UtF1M1PeB5PzmcXMfOeVR2twi6", // "riccardorulez",
     Some("Riccardo"),
     Some("Cardin"),
     Some("Rock the JVM"),
@@ -29,7 +29,7 @@ trait UsersFixture {
 
   val NewUser = User(
     "newuser@gmail.com",
-    "simplepassword",
+    "$2a$10$QozreAc71PCMwx.mNtd5Yuhv6o34LpbM1.dXAcecYRQFQeelcnckK", //"simplepassword",
     Some("John"),
     Some("Doe"),
     Some("Some company"),
@@ -38,7 +38,7 @@ trait UsersFixture {
 
   val UpdatedRiccardo = User(
     "riccardo@rockthejvm.com",
-    "riccardorocks",
+    "$2a$10$y5YEk5BeFCYFOcvkdY0fCexGHE1GGe/sRpfHfz56V86ytqGSVqp/K", // "riccardorocks",
     Some("RICCARDO"),
     Some("CARDIN"),
     Some("Adobe"),
