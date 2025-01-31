@@ -1,5 +1,7 @@
 package com.ohnoyes.jobsboard.domain
 
+import doobie.util.meta.Meta
+
 object user {
   final case class User(
     email: String,
@@ -12,5 +14,9 @@ object user {
 
   enum Role {
     case ADMIN, RECRUITER
+  }
+
+  object Role {
+    given metaRole: Meta[Role] = Meta[String].timap[Role](Role.valueOf)(_.toString)
   }
 }

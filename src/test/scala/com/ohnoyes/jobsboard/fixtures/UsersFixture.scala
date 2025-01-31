@@ -23,4 +23,23 @@ trait UsersFixture {
     Some("Rock the JVM"),
     Role.RECRUITER
   )
+
+  val NewUser = User(
+    "newuser@gmail.com",
+    "simplepassword",
+    Some("John"),
+    Some("Doe"),
+    Some("Some company"),
+    Role.RECRUITER
+  )
+
+  val UpdatedRiccardo = User(
+    "riccardo@rockthejvm.com",
+    "riccardorocks",
+    Some("RICCARDO"),
+    Some("CARDIN"),
+    Some("Adobe"),
+    Role.RECRUITER
+  )
+
 }
