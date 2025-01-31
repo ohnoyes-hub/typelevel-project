@@ -8,10 +8,10 @@ import doobie.implicits.*
 import doobie.util.* 
 import doobie.postgres.implicits.*
 import java.util.UUID
+import org.typelevel.log4cats.Logger
 
 import com.ohnoyes.jobsboard.domain.job.*
 import com.ohnoyes.jobsboard.domain.pagination.*
-import org.typelevel.log4cats.Logger
 import com.ohnoyes.jobsboard.logging.syntax.*
 
 
