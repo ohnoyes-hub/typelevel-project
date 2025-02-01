@@ -15,7 +15,7 @@ trait UsersFixture {
     Role.ADMIN
   )
   val danielEmail = Daniel.email
-  val danielPassword = Daniel.hashedPassword
+  val danielPassword = "rockthejvm"
 
   val Riccardo = User(
     "riccardo@rockthejvm.com",
@@ -26,6 +26,7 @@ trait UsersFixture {
     Role.RECRUITER
   )
   val riccardoEmail = Riccardo.email
+  val riccardoPassword = "riccardorulez"
 
   val NewUser = User(
     "newuser@gmail.com",
@@ -45,4 +46,19 @@ trait UsersFixture {
     Role.RECRUITER
   )
 
+  val NewUserDaniel = NewUserInfo(
+    danielEmail,
+    danielPassword,
+    Some("Daniel"),
+    Some("Ciocirlan"),
+    Some("Rock the JVM")
+  )
+
+  val NewUserRiccardo = NewUserInfo(
+    riccardoEmail,
+    riccardoPassword,
+    Some("Riccardo"),
+    Some("Cardin"),
+    Some("Rock the JVM")
+  )
 }
