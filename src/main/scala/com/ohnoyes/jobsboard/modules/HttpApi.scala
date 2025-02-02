@@ -13,9 +13,10 @@ import com.ohnoyes.jobsboard.http.routes.*
 class HttpApi[F[_]: Concurrent: Logger] private (core: Core[F]){
     private val healthRoutes = HealthRoutes[F].routes 
     private val jobsRoutes = JobsRoutes[F](core.jobs).routes
+    private val authRoutes = AuthRoutes[F](core.auth).routes
 
     val endpoints = Router(
-        "/api" -> (healthRoutes <+> jobsRoutes)
+        "/api" -> (healthRoutes <+> jobsRoutes <+> authRoutes)
     )
 }
 

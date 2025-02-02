@@ -13,7 +13,7 @@ import com.ohnoyes.jobsboard.domain.user.*
 
 trait Users[F[_]] {
   // CRUD
-  def find(email: String): F[Option[User]]
+  def find(email: String): F[Option[User]] // OptionT[F, User]
   def create(user: User): F[String] // return identifier
   def update(user: User): F[Option[User]]
   def delete(email: String): F[Boolean]

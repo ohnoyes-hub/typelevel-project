@@ -2,6 +2,7 @@ package com.ohnoyes.jobsboard.core
 
 import cats.*
 import cats.effect.*
+import cats.data.OptionT
 import cats.implicits.*
 import org.typelevel.log4cats.Logger
 import tsec.authentication.AugmentedJWT
@@ -9,10 +10,16 @@ import tsec.mac.jca.HMACSHA256
 import tsec.authentication.JWTAuthenticator
 import tsec.passwordhashers.jca.BCrypt
 import tsec.passwordhashers.PasswordHash
+import tsec.authentication.IdentityStore
+import tsec.authentication.BackingStore
+import tsec.common.SecureRandomId
+
+import scala.concurrent.duration.*
 
 import com.ohnoyes.jobsboard.domain.security.*
 import com.ohnoyes.jobsboard.domain.auth.*
 import com.ohnoyes.jobsboard.domain.user.*
+import com.ohnoyes.jobsboard.config.*
 
 trait Auth[F[_]] {
     def login(email: String, password: String): F[Option[JwtToken]] // typesafe JWT token
@@ -103,8 +110,44 @@ class LiveAuth[F[_]: Async: Logger] private (
 }
 
 object LiveAuth {
-    def apply[F[_]: Async: Logger](
-        users: Users[F], 
-        authenticator: Authenticator[F]
-    ): F[LiveAuth[F]] = new LiveAuth[F](users, authenticator).pure[F]
+    def apply[F[_]: Async: Logger](users: Users[F])(securityConfig: SecurityConfig): F[LiveAuth[F]] = {
+
+        // 1. Identity store: String => OptionT[F, User]
+        val idStore: IdentityStore[F, String, User] = (email: String) => 
+            OptionT(users.find(email))
+
+        // 2. backing store for JWT tokens for JWT tokens: BackingStore[F, id, JwtToken]
+        val tokenStoreF = Ref.of[F, Map[SecureRandomId, JwtToken]](Map.empty).map { ref =>
+            new BackingStore[F, SecureRandomId, JwtToken] {
+                // REF (atomic)
+                override def get(id: SecureRandomId): OptionT[F, JwtToken] = 
+                    OptionT(ref.get.map(_.get(id))) // OptionT(/*/*F[JwtToken*/
+                override def put(elem: JwtToken): F[JwtToken] = 
+                    ref.modify(store => (store + (elem.id -> elem), elem))
+                override def update(v: JwtToken): F[JwtToken] = 
+                    put(v)
+                override def delete(id: SecureRandomId): F[Unit] = 
+                    ref.modify(store => (store - id, ()))
+            }
+        }
+        // TODO
+
+        // 3. hash key
+        val keyF = HMACSHA256.buildKey[F](securityConfig.secret.getBytes("UTF-8")) 
+        // TODO move to config
+
+        // 4. authenticator
+        for { // val authenticatorF: F[Authenticator[F]] = 
+                key <- keyF
+                tokenStore <- tokenStoreF
+                authenticator = JWTAuthenticator.backed.inBearerToken(
+                    expiryDuration = securityConfig.jwtExpiryDuration, 
+                    maxIdle = None,
+                    identityStore = idStore, 
+                    tokenStore = tokenStore,
+                    signingKey = key
+                )
+        } yield new LiveAuth[F](users, authenticator) // 5. live auth
+
+    }
 }
