@@ -21,6 +21,8 @@ import com.ohnoyes.jobsboard.domain.auth.*
 import com.ohnoyes.jobsboard.domain.user.*
 import com.ohnoyes.jobsboard.domain.security.*
 
+import scala.language.implicitConversions
+
 
 class AuthRoutes[F[_]: Concurrent: Logger] private (auth: Auth[F]) extends HttpValidationDsl[F]{
   
@@ -80,11 +82,23 @@ class AuthRoutes[F[_]: Concurrent: Logger] private (auth: Auth[F]) extends HttpV
                 _ <- authenticator.discard(token)
                 resp <- Ok()
             } yield resp
-        }   
+        } 
+
+    // DELETE /auth/users/
+    private val deleteUserRoutes: AuthRoute[F] = {
+        case req @ DELETE -> Root / "users" / email asAuthed user => 
+            auth.delete(email).flatMap {
+                case true => Ok()
+                case false => NotFound()
+            }
+        }  
 
     val unauthRoutes = loginRoute <+> createUserRoute
     val authRoutes = securedHandler.liftService(
-        TSecAuthService(changePasswordRoute.orElse(logoutRoute))
+        // TSecAuthService(changePasswordRoute.orElse(logoutRoute).orElse(deleteUserRoutes))
+        changePasswordRoute.restrictedTo(allRoles) |+|
+        logoutRoute.restrictedTo(allRoles) |+|
+        deleteUserRoutes.restrictedTo(adminOnly)
     )
 
 
