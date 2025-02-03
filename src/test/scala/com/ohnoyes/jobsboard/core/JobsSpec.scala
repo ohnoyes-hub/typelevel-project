@@ -35,7 +35,7 @@ class JobsSpec
         program.asserting(_ shouldBe None)
       }
     }
-
+    
     "should retrieve a job by id" in {
       transactor.use { xa =>
         val program = for {

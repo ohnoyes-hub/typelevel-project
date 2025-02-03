@@ -27,9 +27,7 @@ import org.checkerframework.checker.units.qual.s
 import com.ohnoyes.jobsboard.logging.syntax.*
 
 
-class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F], authenticator: Authenticator[F]) extends HttpValidationDsl[F] {
-
-    private val securedHandler: SecuredHandler[F] = SecuredRequestHandler(authenticator)
+class JobsRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (jobs: Jobs[F]) extends HttpValidationDsl[F] {
 
     object OffsetQueryParam extends OptionalQueryParamDecoderMatcher[Int]("offset")
     object LimitQueryParam extends OptionalQueryParamDecoderMatcher[Int]("limit")
@@ -92,7 +90,7 @@ class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F], authenticator
     }
 
     val unauthRoutes = allJobsRoutes <+> findJobRoute
-    val authRoutes = securedHandler.liftService(
+    val authRoutes = SecuredHandler[F].liftService(
         createJobRoute.restrictedTo(allRoles) |+|
         updateJobRoute.restrictedTo(allRoles) |+|
         deleteJobRoute.restrictedTo(allRoles)
@@ -103,5 +101,6 @@ class JobsRoutes[F[_]: Concurrent: Logger] private (jobs: Jobs[F], authenticator
 }
 
 object JobsRoutes {
-    def apply[F[_]: Concurrent: Logger](jobs: Jobs[F], authenticator: Authenticator[F]) = new JobsRoutes[F](jobs, authenticator)
+    def apply[F[_]: Concurrent: Logger: SecuredHandler](jobs: Jobs[F]) = 
+        new JobsRoutes[F](jobs)
 }

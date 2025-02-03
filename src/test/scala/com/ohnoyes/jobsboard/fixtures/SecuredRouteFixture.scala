@@ -8,6 +8,7 @@ import tsec.mac.jca.HMACSHA256
 import tsec.authentication.IdentityStore
 import tsec.authentication.JWTAuthenticator
 import tsec.jws.mac.JWTMac
+import tsec.authentication.SecuredRequestHandler
 
 import scala.concurrent.duration.*
 
@@ -40,4 +41,6 @@ trait SecuredRouteFixture extends UsersFixture {
                 // Authorization: Bearer {jwt}
                 Authorization(Credentials.Token(AuthScheme.Bearer, jwtString))
             }
+
+    given securedHandler: SecuredHandler[IO] = SecuredRequestHandler(mockedAuthenticator)
 }
