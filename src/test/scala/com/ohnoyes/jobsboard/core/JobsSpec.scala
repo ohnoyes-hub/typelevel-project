@@ -36,7 +36,7 @@ class JobsSpec
       }
     }
     
-    "should retrieve a job by id" in {
+    "should retrieve a job by id" in { // FAILS
       transactor.use { xa =>
         val program = for {
             jobs <- LiveJobs[IO](xa)
@@ -47,7 +47,7 @@ class JobsSpec
       }
     }
 
-    "should retrieve all jobs" in {
+    "should retrieve all jobs" in { // FAILS
       transactor.use { xa =>
         val program = for {
             jobs <- LiveJobs[IO](xa)
@@ -58,7 +58,7 @@ class JobsSpec
       }
     }
 
-    "should create a new job" in {
+    "should create a new job" in { 
       transactor.use { xa =>
         val program = for {
             jobs <- LiveJobs[IO](xa)
@@ -134,7 +134,7 @@ class JobsSpec
       transactor.use { xa =>
         val program = for {
             jobs <- LiveJobs[IO](xa)
-            filteredTags <- jobs.all(JobFilter(tags = List("scala", "zio")), Pagination.default)
+            filteredTags <- jobs.all(JobFilter(tags = List("scala", "cats", "zio")), Pagination.default)
         } yield filteredTags
 
         program.asserting(_ shouldBe List(AwesomeJob))
