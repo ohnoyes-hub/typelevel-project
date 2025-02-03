@@ -26,7 +26,8 @@ class JobRoutesSpec
     with AsyncIOSpec
     with Matchers
     with Http4sDsl[IO]
-    with JobFixture {
+    with JobFixture 
+    with SecuredRouteFixture {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////        
     // prep
@@ -56,7 +57,7 @@ class JobRoutesSpec
     }   
 
     given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
-    val jobRoutes: HttpRoutes[IO] = JobsRoutes(jobs).routes // what is being tested
+    val jobRoutes: HttpRoutes[IO] = JobsRoutes(jobs, mockedAuthenticator).routes // what is being tested
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////        
     // tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,9 +107,11 @@ class JobRoutesSpec
 
         "should create a new job" in {
             for {
+                jwtToken <- mockedAuthenticator.create(danielEmail)
                 response <- jobRoutes.orNotFound.run(
-                    Request(method = Method.POST, uri = uri"/jobs/create")
+                    Request[IO](method = Method.POST, uri = uri"/jobs/create")
                         .withEntity(AwesomeJob.jobInfo)
+                        .withBearerToken(jwtToken)
                 )
                 retrieved <- response.as[UUID]
             } yield {
@@ -119,13 +122,16 @@ class JobRoutesSpec
 
         "should only update a job that exist" in {
             for {
+                jwtToken <- mockedAuthenticator.create(danielEmail)
                 responseOk <- jobRoutes.orNotFound.run(
-                    Request(method = Method.PUT, uri = uri"/jobs/843df718-ec6e-4d49-9289-f799c0f40064")
+                    Request[IO](method = Method.PUT, uri = uri"/jobs/843df718-ec6e-4d49-9289-f799c0f40064")
                         .withEntity(UpdatedAwesomeJob.jobInfo)
+                        .withBearerToken(jwtToken)
                 )
                 responseInvalid <- jobRoutes.orNotFound.run(
-                    Request(method = Method.PUT, uri = uri"/jobs/843df718-ec6e-4d49-9289-000000000000")
+                    Request[IO](method = Method.PUT, uri = uri"/jobs/843df718-ec6e-4d49-9289-000000000000")
                         .withEntity(UpdatedAwesomeJob.jobInfo)
+                        .withBearerToken(jwtToken)
                 )
             } yield {
                 responseOk.status shouldBe Status.Ok
@@ -133,13 +139,29 @@ class JobRoutesSpec
             }
         }
 
+        "should forbid the update a job that the JWT token does not 'owns'" in {
+            for {
+                jwtToken <- mockedAuthenticator.create("someone@yahoo.com")
+                response <- jobRoutes.orNotFound.run(
+                    Request[IO](method = Method.PUT, uri = uri"/jobs/843df718-ec6e-4d49-9289-f799c0f40064")
+                        .withEntity(UpdatedAwesomeJob.jobInfo)
+                        .withBearerToken(jwtToken)
+                )                
+            } yield {
+                response.status shouldBe Status.Unauthorized
+            }
+        }
+
         "should only delete a job that exist" in {
             for {
+                jwtToken <- mockedAuthenticator.create(danielEmail)
                 responseOk <- jobRoutes.orNotFound.run(
-                    Request(method = Method.DELETE, uri = uri"/jobs/843df718-ec6e-4d49-9289-f799c0f40064")
+                    Request[IO](method = Method.DELETE, uri = uri"/jobs/843df718-ec6e-4d49-9289-f799c0f40064")
+                        .withBearerToken(jwtToken)
                 )
                 responseInvalid <- jobRoutes.orNotFound.run(
-                    Request(method = Method.DELETE, uri = uri"/jobs/843df718-ec6e-4d49-9289-000000000000")
+                    Request[IO](method = Method.DELETE, uri = uri"/jobs/843df718-ec6e-4d49-9289-000000000000")
+                    .withBearerToken(jwtToken)
                 )
             } yield {
                 responseOk.status shouldBe Status.Ok

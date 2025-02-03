@@ -21,7 +21,7 @@ trait JobFixture {
       "Awesome Company",
       "Tech Lead",
       "An awesome job in Berlin",
-      "https://www.ohnoyes.com/awesomejob",
+      "https://www.rockthejvm.com/awesomejob",
       false,
       "Berlin",
       2000.some,
