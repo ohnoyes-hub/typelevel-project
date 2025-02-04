@@ -66,7 +66,8 @@ class AuthRoutesSpec
 
         def delete(email: String): IO[Boolean] = IO.pure(true)
 
-        def authenticator: Authenticator[IO] = mockedAuthenticator
+        override def sendPasswordRecoveryToken(email: String): IO[Unit] = ???
+        override def recoverPasswordFromToken(email: String, token: String, newPassword: String): IO[Boolean] = ???
     }
 
 

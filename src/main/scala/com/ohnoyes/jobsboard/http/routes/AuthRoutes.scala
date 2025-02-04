@@ -91,6 +91,18 @@ class AuthRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (auth: Auth[F
             }
         }  
 
+    // POST /auth/reset { ForgotPasswordInfo }
+    private val forgotPasswordRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+        case req @ POST -> Root / "reset" => 
+            Ok("TODO")
+        }
+
+    // POST /auth/recover { RecoverPasswordInfo }
+    private val recoverPasswordRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+        case req @ POST -> Root / "recover" => 
+            Ok("TODO")
+        }
+
     val unauthRoutes = loginRoute <+> createUserRoute
     val authRoutes = SecuredHandler[F].liftService(
         // TSecAuthService(changePasswordRoute.orElse(logoutRoute).orElse(deleteUserRoutes))

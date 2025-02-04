@@ -26,6 +26,9 @@ trait Auth[F[_]] {
     def signup(newUserInfo : NewUserInfo): F[Option[User]]
     def changePassword(email: String, newPasswordInfo: NewPasswordInfo): F[Either[String, Option[User]]]  
     def delete(email: String): F[Boolean]
+    // password recovery
+    def sendPasswordRecoveryToken(email: String): F[Unit]
+    def recoverPasswordFromToken(email: String, token: String, newPassword: String): F[Boolean]
 }
 
 class LiveAuth[F[_]: Async: Logger] private (users: Users[F]) extends Auth[F] {
@@ -99,6 +102,11 @@ class LiveAuth[F[_]: Async: Logger] private (users: Users[F]) extends Auth[F] {
 
     override def delete(email: String): F[Boolean] = 
         users.delete(email)
+
+    // password recovery
+    override def sendPasswordRecoveryToken(email: String): F[Unit] = ???
+    
+    override def recoverPasswordFromToken(email: String, token: String, newPassword: String): F[Boolean] = ???
 }
 
 object LiveAuth {
