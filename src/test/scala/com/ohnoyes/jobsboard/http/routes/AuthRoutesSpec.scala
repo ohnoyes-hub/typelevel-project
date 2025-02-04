@@ -42,7 +42,9 @@ class AuthRoutesSpec
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
 
-    val mockedAuth: Auth[IO] = new Auth[IO] {
+    val mockedAuth: Auth[IO] = probedAuth(None)
+        
+    def probedAuth(userMap: Option[Ref[IO, Map[String, String]]]): Auth[IO] = new Auth[IO] {
         def login(email: String, password: String): IO[Option[User]] = 
             if (email == danielEmail && password == danielPassword) 
                 Some(Daniel).pure[IO]
@@ -66,8 +68,24 @@ class AuthRoutesSpec
 
         def delete(email: String): IO[Boolean] = IO.pure(true)
 
-        override def sendPasswordRecoveryToken(email: String): IO[Unit] = ???
-        override def recoverPasswordFromToken(email: String, token: String, newPassword: String): IO[Boolean] = ???
+        override def sendPasswordRecoveryToken(email: String): IO[Unit] = 
+            userMap.traverse { userMapRef =>
+                userMapRef.modify { userMap =>
+                    (userMap + (email -> "abc123"), ())
+                }
+            }.map(_ => ())
+
+
+        override def recoverPasswordFromToken(email: String, token: String, newPassword: String): IO[Boolean] = 
+            userMap
+                .traverse { userMapRef =>
+                    userMapRef.get
+                        .map { userMap => // IO[Map[String, String]]
+                            userMap.get(email).filter(_ == token) // Option[String]
+                        }
+                        .map(_.nonEmpty) // IO[Boolean]
+                } // IO[Option[String]]
+                .map(_.getOrElse(false)) // IO[Boolean]
     }
 
 
@@ -225,6 +243,55 @@ class AuthRoutesSpec
             } yield {
                 // assertions hear
                 response.status shouldBe Status.Ok
+            }
+        }
+
+        "should return a 200 - Ok when resetting a password, and an email should be triggered" in {
+            for {
+                userMapRef <- Ref.of[IO, Map[String, String]](Map())
+                auth <- IO(probedAuth(Some(userMapRef)))
+                routes <- IO(AuthRoutes(auth, mockedAuthenticator).routes)
+                response <- routes.orNotFound.run(
+                    Request(method = Method.POST, uri = uri"/auth/reset")
+                        .withEntity(ForgotPasswordInfo(danielEmail))
+                )
+                userMap <- userMapRef.get
+            } yield {
+                // assertions hear
+                response.status shouldBe Status.Ok
+                userMap should contain key danielEmail
+            }
+        }
+
+        "should return a 200 - Ok when recovering a password for a correct user and token combination" in {
+            for {
+                userMapRef <- Ref.of[IO, Map[String, String]](Map(danielEmail -> "abc123"))
+                auth <- IO(probedAuth(Some(userMapRef)))
+                routes <- IO(AuthRoutes(auth, mockedAuthenticator).routes)
+                response <- routes.orNotFound.run(
+                    Request(method = Method.POST, uri = uri"/auth/recover")
+                        .withEntity(RecoverPasswordInfo(danielEmail, "abc123", "newpassword"))
+                )
+                userMap <- userMapRef.get
+            } yield {
+                // assertions hear
+                response.status shouldBe Status.Ok
+            }
+        }
+
+        "should return a 403 - Forbidden when recovering a password for a user with an invalid token" in {
+            for {
+                userMapRef <- Ref.of[IO, Map[String, String]](Map(danielEmail -> "abc123"))
+                auth <- IO(probedAuth(Some(userMapRef)))
+                routes <- IO(AuthRoutes(auth, mockedAuthenticator).routes)
+                response <- routes.orNotFound.run(
+                    Request(method = Method.POST, uri = uri"/auth/recover")
+                        .withEntity(RecoverPasswordInfo(danielEmail, "wrong", "newpassword"))
+                )
+                userMap <- userMapRef.get
+            } yield {
+                // assertions hear
+                response.status shouldBe Status.Forbidden
             }
         }
     }
