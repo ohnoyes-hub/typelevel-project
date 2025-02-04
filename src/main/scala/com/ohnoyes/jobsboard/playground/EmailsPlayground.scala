@@ -24,11 +24,11 @@ object EmailsPlayground {
         Username 	annamarie39@ethereal.email
         Password 	7HZ3zZ1vuSXc3rvP2W
          */
-        val host = "smtp.ethereal.email"
-        val port = 587
-        val user = "annamarie39@ethereal.email"
-        val pass = "7HZ3zZ1vuSXc3rvP2W"
-        val token = "ABCD1234"
+        val host        = "smtp.ethereal.email"
+        val port        = 587
+        val user        = "annamarie39@ethereal.email"
+        val pass        = "7HZ3zZ1vuSXc3rvP2W"
+        val token       = "ABCD1234"
         val frontendUrl = "https://google.com"
 
         // properties file

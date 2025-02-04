@@ -43,9 +43,9 @@ class AuthRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (auth: Auth[F
             }
         } 
 
-    // POST /auth/signup { NewUserInfo } => 201 Created or BadRequest
+    // POST /auth/users { NewUserInfo } => 201 Created or BadRequest
     private val createUserRoute: HttpRoutes[F] = HttpRoutes.of[F] {
-        case req @ POST -> Root / "signup" => 
+        case req @ POST -> Root / "users" => 
             req.validate[NewUserInfo] { newUserInfo =>
                 for {
                     mayberNewUser <- auth.signup(newUserInfo)

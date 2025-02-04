@@ -4,16 +4,14 @@ import cats.effect.*
 import cats.implicits.*
 import java.util.Properties
 import javax.mail.Authenticator
-
 import javax.mail.PasswordAuthentication
 import javax.mail.Session
 import javax.mail.internet.MimeMessage
 import javax.mail.Message
 import javax.mail.Transport
 
-import com.ohnoyes.jobsboard.core.*
 import com.ohnoyes.jobsboard.config.*
-import com.ohnoyes.jobsboard.config.*
+
 trait Emails[F[_]] {
     def sendEmail(to: String, subject: String, content: String): F[Unit]
     def sendPasswordRecoveryEmail(to: String, token: String): F[Unit] 
@@ -33,7 +31,7 @@ class LiveEmails[F[_]: MonadCancelThrow] private (emailServiceConfig: EmailServi
             prop <- propResource
             auth <- authenticatorResource
             session <- createSesion(prop, auth)
-            message <- createMessage(session)("tdtsijpkens@gmail.com", to, subject, content)
+            message <- createMessage(session)("thomas@ohnoyes.xyz", to, subject, content)
         } yield message
 
         messageResource.use(msg => Transport.send(msg).pure[F])
@@ -96,19 +94,4 @@ class LiveEmails[F[_]: MonadCancelThrow] private (emailServiceConfig: EmailServi
 object LiveEmails {
     def apply[F[_]: MonadCancelThrow](emailServiceConfig: EmailServiceConfig): F[LiveEmails[F]] = 
         new LiveEmails[F](emailServiceConfig).pure[F]
-}
-
-object EmailsEffectPlayground extends IOApp.Simple {
-    override def run: IO[Unit] = for {
-        emails <- LiveEmails[IO](
-            EmailServiceConfig(
-                host = "smtp.ethereal.email",
-                port = 587,
-                user = "annamarie39@ethereal.email",
-                pass = "7HZ3zZ1vuSXc3rvP2W",
-                frontendUrl = "https://google.com"
-                )
-            )
-        _ <- emails.sendPasswordRecoveryEmail("someone@ohnoyes.com", "OHNOYES1234")
-    } yield ()
 }
