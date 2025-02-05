@@ -19,13 +19,6 @@ import com.typesafe.config.Config
 import pureconfig.error.ConfigReaderException
 import org.http4s.server.middleware.ErrorAction.httpApp
 
-
-/* 
-TODO: 
-    1- create the health endpoint to our app
-    2- add minimal configuration
-    3- basic
- */
 object Application extends IOApp.Simple {
 
     given logger: Logger[IO] = Slf4jLogger.getLogger[IO]

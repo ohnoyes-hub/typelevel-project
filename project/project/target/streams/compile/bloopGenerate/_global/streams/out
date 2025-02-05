@@ -1,4 +1,4 @@
-[0m[[0m[0mdebug[0m] [0m[0m[typelevel-project-build-build] Classpath dependencies List()[0m
-[0m[[0m[0mdebug[0m] [0m[0m[typelevel-project-build-build] Dependencies from configurations List()[0m
-[0m[[0m[0mdebug[0m] [0m[0mBloop wrote the configuration of project 'typelevel-project-build-build' to '/home/ohnoyes/typelevel-project/project/project/.bloop/typelevel-project-build-build.json'[0m
-[0m[[0m[32msuccess[0m] [0m[0mGenerated .bloop/typelevel-project-build-build.json[0m
+[debug] [typelevel-project-build-build] Classpath dependencies List()
+[debug] [typelevel-project-build-build] Dependencies from configurations List()
+[debug] Bloop wrote the configuration of project 'typelevel-project-build-build' to '/home/ohnoyes/typelevel-project/project/project/.bloop/typelevel-project-build-build.json'
+[success] Generated .bloop/typelevel-project-build-build.json
