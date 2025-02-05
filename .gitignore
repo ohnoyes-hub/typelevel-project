@@ -19,3 +19,14 @@ metals.sbt
 
 # target
 target/
+
+# ScalaJS
+./server/target
+
+# Excluding/including specific files in the project directory
+./project/*
+!./project/build.properties
+!./project/plugins.sbt
+
+# Application
+./app/target
