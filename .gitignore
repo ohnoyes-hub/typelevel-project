@@ -29,4 +29,18 @@ target/
 !./project/plugins.sbt
 
 # Application
-./app/target
+./app/target/*
+!.app/target/scala-3.3.4
+
+# project
+project/.bloop 
+project/project 
+project/target 
+
+# npm
+app/.parcel-cache 
+app/dist 
+app/node_modules 
+app/package-lock.json
+
+
