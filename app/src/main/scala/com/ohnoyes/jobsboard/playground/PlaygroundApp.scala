@@ -15,7 +15,7 @@ object PlaygroundApp {
     case class Model(count: Int)
 }
 
-@JSExportTopLevel("OhNoYesApp")
+// @JSExportTopLevel("OhNoYesApp") // can only have one top level export
 class PlaygroundApp extends TyrianApp[PlaygroundApp.Msg, PlaygroundApp.Model]{
     import PlaygroundApp.*
     //            TyrianApp[Int,           String]{

@@ -7,48 +7,52 @@ import scala.scalajs.js.annotation.*
 import org.scalajs.dom.{document,console}
 import scala.concurrent.duration.*
 import tyrian.cmds.Logger
+import org.scalajs.dom.window
+
+import core.*
 
 object App {
-    sealed trait Msg
-    case class Increment(amount: Int) extends Msg
+    type Msg = Router.Msg
 
-    case class Model(count: Int)
+    case class Model(router: Router)
 }
 
 @JSExportTopLevel("OhNoYesApp")
 class App extends TyrianApp[App.Msg, App.Model]{
     import App.*
-    //            TyrianApp[Int,           String]{
-    //                      ^^message      ^^model="state"
-    /* 
-        Send messages by:
-            - trigger a command
-            - create a subscription
-            - listening for an even
-     */
+    
+    override def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) = {
+        val (router, cmd) = Router.startAt(window.location.pathname)
+        (Model(router), cmd)
+    }
+        // (Model(Router.startAt(window.location.pathname)), Cmd.None)    
 
-    // Tyrian launch function:
-    override def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) = 
-        (Model(0), Cmd.None)    
+    override def subscriptions(model: Model): Sub[IO, Msg] =  
+        Sub.make( // listener for browser history changes
+            "urlChange", model.router.history.state.discrete // fs2.Stream of locations
+            .map(_.get) // fs2.Stream of Option[String]
+            .map(newLocation => Router.ChangeLocation(newLocation, true))    
+        )
 
-    // subscriptions are potentially endless stream of messages
-    override def subscriptions(model: Model): Sub[IO, Msg] = 
-        Sub.every[IO](1.second).map(_ => Increment(1))
-        //Sub.None
-
-    // model can change by receiving messages (state transition)
-    // model => message => (new model, __)
-    // update triggered when we get a new message
-    override def update(model: Model): Msg => (Model, Cmd[IO, Msg]) = { case Increment(amount) => 
-        // console.log(s"incrementing count by $amount") // not the recommended way
-        (model.copy(count = model.count + amount), Logger.consoleLog[IO]("Changing count by" + amount)) 
+    override def update(model: Model): Msg => (Model, Cmd[IO, Msg]) = { 
+        case msg: Router.Msg => 
+            val (newRouter, cmd) = model.router.update(msg)
+            (Model(router = newRouter), cmd)
+        case _ =>  (model, Cmd.None) // TODO to check external redirects as weel
     }
 
-    // view triggered when whenever model changes
     override def view(model: Model): Html[Msg] = // virtual dom
         div(
-            button(onClick(Increment(1)))("increase me"),
-            button(onClick(Increment(-1)))("decrease me"),
-            div(s"Tyrian running: ${model.count}!")
+            renderNavLink("Jobs", "/jobs"),
+            renderNavLink("Login", "/login"),
+            renderNavLink("Signup", "/signup"),
+            div(s"Now at location: ${model.router.location}")    
         )
+            
+    private def renderNavLink(text: String, location: String): Html[Msg] = 
+        a(href := location, `class` := "nav-link", onEvent("click", /*DOM even*/ e => {
+            e.preventDefault() // native JS - prevent reloading the page
+            Router.ChangeLocation(location)
+        }))(text)
+        // header <a herf="/jobs">Jobs</a>
 }
