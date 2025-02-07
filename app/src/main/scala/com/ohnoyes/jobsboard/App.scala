@@ -10,6 +10,7 @@ import tyrian.cmds.Logger
 import org.scalajs.dom.window
 
 import core.*
+import components.*
 
 object App {
     type Msg = Router.Msg
@@ -43,16 +44,7 @@ class App extends TyrianApp[App.Msg, App.Model]{
 
     override def view(model: Model): Html[Msg] = // virtual dom
         div(
-            renderNavLink("Jobs", "/jobs"),
-            renderNavLink("Login", "/login"),
-            renderNavLink("Signup", "/signup"),
+            Header.view(),
             div(s"Now at location: ${model.router.location}")    
         )
-            
-    private def renderNavLink(text: String, location: String): Html[Msg] = 
-        a(href := location, `class` := "nav-link", onEvent("click", /*DOM even*/ e => {
-            e.preventDefault() // native JS - prevent reloading the page
-            Router.ChangeLocation(location)
-        }))(text)
-        // header <a herf="/jobs">Jobs</a>
 }
