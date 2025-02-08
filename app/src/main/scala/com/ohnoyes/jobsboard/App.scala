@@ -11,11 +11,12 @@ import org.scalajs.dom.window
 
 import core.*
 import components.*
+import pages.*
 
 object App {
-    type Msg = Router.Msg
+    type Msg = Router.Msg | Page.Msg
 
-    case class Model(router: Router)
+    case class Model(router: Router, page: Page)
 }
 
 @JSExportTopLevel("OhNoYesApp")
@@ -23,8 +24,11 @@ class App extends TyrianApp[App.Msg, App.Model]{
     import App.*
     
     override def init(flags: Map[String, String]): (Model, Cmd[IO, Msg]) = {
-        val (router, cmd) = Router.startAt(window.location.pathname)
-        (Model(router), cmd)
+        val location = window.location.pathname
+        val page = Page.get(location) // factory
+        val pageCmd = page.initCmd
+        val (router, routerCmd) = Router.startAt(location)
+        (Model(router, page), routerCmd |+| pageCmd)
     }
         // (Model(Router.startAt(window.location.pathname)), Cmd.None)    
 
@@ -37,14 +41,24 @@ class App extends TyrianApp[App.Msg, App.Model]{
 
     override def update(model: Model): Msg => (Model, Cmd[IO, Msg]) = { 
         case msg: Router.Msg => 
-            val (newRouter, cmd) = model.router.update(msg)
-            (Model(router = newRouter), cmd)
-        case _ =>  (model, Cmd.None) // TODO to check external redirects as weel
+            val (newRouter, routerCmd) = model.router.update(msg)
+            if (model.router == newRouter) // no change necessary
+                (model, Cmd.None)
+            else { // location change, need to re-render appropriate page
+                val newPage = Page.get(newRouter.location)
+                val newPageCmd = newPage.initCmd
+                (model.copy(router = newRouter, page = newPage), routerCmd |+| newPageCmd)
+            }
+        case msg: Page.Msg =>
+            // update the page
+            val (newPage, cmd) = model.page.update(msg)
+            (model.copy(page = newPage), cmd)
+        //case _ =>  (model, Cmd.None) // TODO to check external redirects as weel
     }
 
     override def view(model: Model): Html[Msg] = // virtual dom
         div(
             Header.view(),
-            div(s"Now at location: ${model.router.location}")    
+            model.page.view()
         )
 }
