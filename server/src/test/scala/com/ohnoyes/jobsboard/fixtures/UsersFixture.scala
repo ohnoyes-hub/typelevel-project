@@ -2,8 +2,8 @@ package com.ohnoyes.jobsboard.fixtures
 
 import cats.effect.IO
 import com.ohnoyes.jobsboard.core.Users
+import com.ohnoyes.jobsboard.domain.auth.*
 import com.ohnoyes.jobsboard.domain.user.*
-
 
 trait UsersFixture {
 
