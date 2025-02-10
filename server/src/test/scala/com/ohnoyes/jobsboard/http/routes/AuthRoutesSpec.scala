@@ -124,7 +124,7 @@ class AuthRoutesSpec
         "should return a 400 - Bad Request if the user created already exist" in {
             for {
                 response <- authRoutes.orNotFound.run(
-                    Request(method = Method.POST, uri = uri"/auth/signup")
+                    Request(method = Method.POST, uri = uri"/auth/users")
                     .withEntity(NewUserDaniel)
                 )
             } yield {
@@ -135,7 +135,7 @@ class AuthRoutesSpec
         "should return a 201 - Created if the user creation succeeds" in {
             for {
                 response <- authRoutes.orNotFound.run(
-                    Request(method = Method.POST, uri = uri"/auth/signup")
+                    Request(method = Method.POST, uri = uri"/auth/users")
                     .withEntity(NewUserRiccardo)
                 )
             } yield {

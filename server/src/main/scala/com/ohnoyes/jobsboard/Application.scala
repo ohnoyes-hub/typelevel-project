@@ -9,6 +9,7 @@ import cats.effect.IO
 import cats.*
 import cats.implicits.*
 import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.middleware.CORS
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import com.ohnoyes.jobsboard.modules.*
@@ -33,7 +34,7 @@ object Application extends IOApp.Simple {
                         .default[IO]
                         .withHost(emberConfig.host) 
                         .withPort(emberConfig.port)
-                        .withHttpApp(httpApi.endpoints.orNotFound)
+                        .withHttpApp(CORS(httpApi.endpoints).orNotFound) // TODO remove default CORS setting when deploying
                         .build
             } yield server
 

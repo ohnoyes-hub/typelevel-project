@@ -6,7 +6,13 @@ object auth {
     password: String
   )
 
-  final case class NewUserInfo(email: String, password: String, firstName: Option[String], lastName: Option[String], company: Option[String])
+  final case class NewUserInfo(
+    email: String, 
+    password: String, 
+    firstName: Option[String], 
+    lastName: Option[String], 
+    company: Option[String]
+  )
 
 
   final case class NewPasswordInfo( // email needs to already be authenticated
