@@ -14,9 +14,9 @@ import components.*
 import pages.*
 
 object App {
-    type Msg = Router.Msg | Page.Msg
+    trait Msg
 
-    case class Model(router: Router, page: Page)
+    case class Model(router: Router, session: Session, page: Page)
 }
 
 @JSExportTopLevel("OhNoYesApp")
@@ -28,7 +28,9 @@ class App extends TyrianApp[App.Msg, App.Model]{
         val page = Page.get(location) // factory
         val pageCmd = page.initCmd
         val (router, routerCmd) = Router.startAt(location)
-        (Model(router, page), routerCmd |+| pageCmd)
+        val session = Session()
+        val sessionCmd = session.initCmd
+        (Model(router, session, page), routerCmd |+| sessionCmd |+| pageCmd)
     }
         // (Model(Router.startAt(window.location.pathname)), Cmd.None)    
 
@@ -49,7 +51,10 @@ class App extends TyrianApp[App.Msg, App.Model]{
                 val newPageCmd = newPage.initCmd
                 (model.copy(router = newRouter, page = newPage), routerCmd |+| newPageCmd)
             }
-        case msg: Page.Msg =>
+        case msg: Session.Msg => 
+            val (newSession, sessionCmd) = model.session.update(msg)
+            (model.copy(session = newSession), sessionCmd)
+        case msg: App.Msg =>
             // update the page
             val (newPage, cmd) = model.page.update(msg)
             (model.copy(page = newPage), cmd)
@@ -59,6 +64,7 @@ class App extends TyrianApp[App.Msg, App.Model]{
     override def view(model: Model): Html[Msg] = // virtual dom
         div(
             Header.view(),
-            model.page.view()
+            model.page.view(),
+            div(model.session.email.getOrElse("Uauthenticated")),
         )
 }

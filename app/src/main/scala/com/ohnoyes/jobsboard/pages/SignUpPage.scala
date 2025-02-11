@@ -12,6 +12,8 @@ import io.circe.generic.auto.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.auth.*
 
+import com.ohnoyes.jobsboard.*
+
 // form
 /* 
     NewUserInfo input:
@@ -35,10 +37,10 @@ final case class SignUpPage(
     import SignUpPage.*
 
     // API
-    override def initCmd: Cmd[IO, Page.Msg] = 
+    override def initCmd: Cmd[IO, App.Msg] = 
         Cmd.None
 
-    override def update(msg: Page.Msg): (Page, Cmd[IO, Page.Msg]) = msg match {
+    override def update(msg: App.Msg): (Page, Cmd[IO, App.Msg]) = msg match {
         case UpdateEmail(e) => (this.copy(email=e), Cmd.None) //Logger.consoleLog[IO](s"Changing email: $email"))
         case UpdatePassword(p) => (this.copy(password=p), Cmd.None)
         case UpdateConfirmPassword(cp) => (this.copy(confirmPassword=cp), Cmd.None)
@@ -68,7 +70,7 @@ final case class SignUpPage(
         case _ => (this, Cmd.None)
     }
 
-    override def view(): Html[Page.Msg] = 
+    override def view(): Html[App.Msg] = 
         div( `class` := "form-selection")(
             // Ttile: Sign Up
             div(`class` := "top-section")(
@@ -122,7 +124,7 @@ final case class SignUpPage(
 } 
 
 object SignUpPage {
-    trait Msg extends Page.Msg
+    trait Msg extends App.Msg
     case class UpdateEmail(email: String) extends Msg
     case class UpdatePassword(password: String) extends Msg
     case class UpdateConfirmPassword(confirmPassword: String) extends Msg

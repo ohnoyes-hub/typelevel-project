@@ -3,6 +3,9 @@ package com.ohnoyes.jobsboard.core
 import cats.effect.IO
 import tyrian.*
 import fs2.dom.History
+import snabbdom.init
+
+import com.ohnoyes.jobsboard.*
 
 // jobs.ohnoyes.com/something : location = /something
 case class Router private (location: String, history: History[IO, String]) {
@@ -27,7 +30,7 @@ case class Router private (location: String, history: History[IO, String]) {
 }
 
 object Router {
-    trait Msg
+    trait Msg extends App.Msg
     case class ChangeLocation(location: String, browserTriggered: Boolean = false) extends Msg
     case class ExternalRedirect(location: String) extends Msg
 

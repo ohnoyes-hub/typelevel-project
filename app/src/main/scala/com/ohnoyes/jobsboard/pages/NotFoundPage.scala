@@ -4,13 +4,15 @@ import tyrian.*
 import tyrian.Html.*
 import cats.effect.IO
 
+import com.ohnoyes.jobsboard.*
+
 final case class NotFoundPage() extends Page {
     // API
-    override def initCmd: Cmd[IO, Page.Msg] = 
+    override def initCmd: Cmd[IO, App.Msg] = 
         Cmd.None
-    override def update(msg: Page.Msg): (Page, Cmd[IO, Page.Msg]) = 
+    override def update(msg: App.Msg): (Page, Cmd[IO, App.Msg]) = 
         (this, Cmd.None)
-    override def view(): Html[Page.Msg] = 
+    override def view(): Html[App.Msg] = 
         div(
             h1("OH NO! Page Not Found - TODO")
         )

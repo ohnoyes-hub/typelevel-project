@@ -7,9 +7,12 @@ import cats.effect.IO
 import io.circe.generic.auto.*
 import tyrian.cmds.Logger
 
+import com.ohnoyes.jobsboard.core.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.auth.* 
+import com.ohnoyes.jobsboard.core.Session
 
+import com.ohnoyes.jobsboard.*
 
 /* 
 form
@@ -25,9 +28,9 @@ final case class LoginPage(
 ) extends Page {
     import LoginPage.*
     // API
-    override def initCmd: Cmd[IO, Page.Msg] = 
+    override def initCmd: Cmd[IO, App.Msg] = 
         Cmd.None
-    override def update(msg: Page.Msg): (Page, Cmd[IO, Page.Msg]) = msg match {
+    override def update(msg: App.Msg): (Page, Cmd[IO, App.Msg]) = msg match {
         case UpdateEmail(e) => (this.copy(email=e), Cmd.None) //Logger.consoleLog[IO](s"Changing email: $email"))
         case UpdatePassword(p) => (this.copy(password=p), Cmd.None)
         case AttempLogin => 
@@ -40,15 +43,15 @@ final case class LoginPage(
         case LoginError(error) => 
             (setErrorStatus(error), Cmd.None)
         case LoginSuccess(token) =>
-            (setSuccessStatus("Yes! Login successful"), Logger.consoleLog[IO](s"You Got Token: $token"))
+            (setSuccessStatus("Yes! Login successful"), Cmd.Emit(Session.SetToken(email, token, isNewUser = true))) // Session.SetToken(email, token) should be a App.Msg
         case _ => (this, Cmd.None)
     }
         
-    override def view(): Html[Page.Msg] = 
+    override def view(): Html[App.Msg] = 
         div( `class` := "form-selection")(
-            // Ttile: Sign Up
+            // Ttile: Login
             div(`class` := "top-section")(
-                h1("Sign Up")
+                h1("Login")
             ),
             // form
             form(name := "signin", `class` := "form", onEvent("submit",
@@ -94,7 +97,7 @@ final case class LoginPage(
 
 object LoginPage {
     // Msg
-    trait Msg extends Page.Msg
+    trait Msg extends App.Msg
     case class UpdateEmail(email: String) extends Msg
     case class UpdatePassword(password: String) extends Msg
     // actions
