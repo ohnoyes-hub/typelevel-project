@@ -1,6 +1,7 @@
 package com.ohnoyes.jobsboard.core
 
 import tyrian.*
+import tyrian.http.*
 import cats.effect.IO
 import tyrian.cmds.Logger
 import org.scalajs.dom.document
@@ -8,17 +9,25 @@ import scala.scalajs.js.Date
 
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.common.*
+import com.ohnoyes.jobsboard.pages.*
+import com.ohnoyes.jobsboard.common.Constants.Endpoints
 
 
 final case class Session(email: Option[String] = None, token: Option[String] = None) {
     import Session.*
 
-    def update(msg: Msg): (Session, Cmd[IO, Msg]) = msg match {
+    def update(msg: Msg): (Session, Cmd[IO, App.Msg]) = msg match {
         case SetToken(em, t, isNewUser) => 
-            (
-                this.copy(email=Some(em), token=Some(t)), 
-                Commands.setAllSessionCookies(em, t, isNewUser)
-            )
+            val cookieCmd = Commands.setAllSessionCookies(em, t, isNewUser)
+            val routingCmd = 
+                if (isNewUser) Cmd.Emit(Router.ChangeLocation(Page.Urls.HOME))
+                else Cmd.None
+            (this.copy(email=Some(em), token=Some(t)), cookieCmd |+| routingCmd)
+        case Logout =>
+            val cmd = token.map(_ => Commands.logout).getOrElse(Cmd.None)
+            (this, cmd)
+        case LogoutSuccess =>
+            (this.copy(email=None, token=None), Commands.clearAllSessionCookies |+| Cmd.Emit(Router.ChangeLocation(Page.Urls.HOME)))
         }
     
     def initCmd: Cmd[IO, Msg] = {
@@ -34,8 +43,30 @@ final case class Session(email: Option[String] = None, token: Option[String] = N
 object Session {
     trait Msg extends App.Msg
     case class SetToken(email: String, token: String, isNewUser: Boolean = false) extends Msg
+    case object Logout extends Msg
+    case object LogoutSuccess extends Msg
+    case object LogoutError extends Msg
+
+    def isActive =
+        getUserToken().nonEmpty
+
+    def getUserToken() = 
+        getCookie(Constants.cookies.token)
+
+    object Endpoints {
+        val logout = new Endpoint[Msg] {
+            val location = Constants.Endpoints.logout
+            val method = Method.Post
+            val onSuccess: Response => Msg = _ => LogoutSuccess
+            val onError: HttpError => Msg = _ => LogoutError
+        }
+    }
 
     object Commands {
+        def logout: Cmd[IO, Msg] = 
+            Endpoints.logout.callAuthorized()
+
+
         def setSessionCookie(name: String, value: String, isFresh: Boolean): Cmd[IO, Msg] = 
             Cmd.SideEffect[IO] {
                 if (getCookie(name).isEmpty || isFresh) {

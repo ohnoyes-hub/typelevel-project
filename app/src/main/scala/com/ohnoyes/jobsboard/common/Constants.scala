@@ -8,7 +8,7 @@ object Constants {
         val root = "http://localhost:7272"
         val signup = s"$root/api/auth/users"
         val login = s"$root/api/auth/login"
-
+        val logout = s"$root/api/auth/logout"
     }
 
     object cookies {
