@@ -69,14 +69,14 @@ object Session {
         val logout = new Endpoint[Msg] {
             val location = Constants.endpoints.logout
             val method = Method.Post
-            val onSuccess: Response => Msg = _ => LogoutSuccess
+            val onResponse: Response => Msg = _ => LogoutSuccess
             val onError: HttpError => Msg = _ => LogoutError
         }
 
         val checkToken = new Endpoint[Msg] {
             override val location = Constants.endpoints.checkToken
             override val method = Method.Get
-            override val onSuccess: Response => Msg = response => response.status match {
+            override val onResponse: Response => Msg = response => response.status match {
                 case Status(200, _) => KeepToken
                 case _ => InvalidateToken
             }
