@@ -123,6 +123,7 @@ object SignUpPage {
                         case Right(error) => SignUpError(error)
                         
                     }
+                case _ => SignUpError("Oh no! Unknown error.")
             }
             val onError: HttpError => Msg = 
                 e => SignUpError(e.toString())

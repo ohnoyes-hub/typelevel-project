@@ -88,6 +88,7 @@ object ResetPasswordPage {
                         case Left(e) => ResetPasswordFailure(s"Response error: ${e.getMessage}")
                         case Right(serverError) => ResetPasswordFailure(serverError)   
                     }
+                case _ => ResetPasswordFailure("Oh no! Unknown error.")
             }
         }
     }
