@@ -4,14 +4,18 @@ import tyrian.*
 import tyrian.Html.*
 import tyrian.http.*
 import cats.effect.IO
+import cats.syntax.traverse.*
 import io.circe.generic.auto.*
 import io.circe.parser.* 
+import tyrian.cmds.Logger
+import org.scalajs.dom.File
+import org.scalajs.dom.FileReader
 
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.core.*
 import com.ohnoyes.jobsboard.common.*
-import tyrian.cmds.Logger
 import com.ohnoyes.jobsboard.domain.job.*
+import scala.util.Try
 
 case class PostJobPage(
     company: String = "",
@@ -59,6 +63,10 @@ case class PostJobPage(
             (this.copy(country = Some(v)), Cmd.None)
         case UpdateTags(v) => 
             (this.copy(tags = Some(v)), Cmd.None)
+        case UpdateImageFile(maybeFile) =>
+            (this, Commands.loadFile(maybeFile))
+        case UpdateImage(maybeImage) =>
+            (this.copy(image = maybeImage), Logger.consoleLog[IO]("Image yoinked: " + maybeImage))
         case UpdateSeniority(v) =>
             (this.copy(seniority = Some(v)), Cmd.None)
         case UpdateOther(v) =>
@@ -91,16 +99,15 @@ case class PostJobPage(
         renderInput("Company", "company", "text", true, UpdateCompany(_)),
         renderInput("Title", "title", "text", true, UpdateTitle(_)),
         renderTextArea("Description", "description", true, UpdateDescription(_)),
-        // TODO: add text area for description
         renderInput("ExternalUrl", "externalUrl", "text", true, UpdateExternalUrl(_)),
         renderInput("Remote", "remote", "checkbox", false, _ => ToggleRemote),
         renderInput("Location", "location", "text", true, UpdateLocation(_)),
-        renderInput("SalaryLow", "salaryLow", "number", false, value => UpdateSalaryLow(value.toInt)),
-        renderInput("SalaryHi", "salaryHi", "number", false, value => UpdateSalaryHi(value.toInt)),
+        renderInput("SalaryLow", "salaryLow", "number", false, s => UpdateSalaryLow(parseNumber(s))),
+        renderInput("SalaryHi", "salaryHi", "number", false, s => UpdateSalaryHi(parseNumber(s))),
         renderInput("Currency", "currency", "text", false, UpdateCurrency(_)),
         renderInput("Country", "country", "text", false, UpdateCountry(_)),
         renderInput("Tags", "tags", "text", false, UpdateTags(_)),
-        // TODO: add image upload
+        renderImageUploadInput("Logo", "logo", image, UpdateImageFile(_)),
         renderInput("Seniority", "seniority", "text", false, UpdateSeniority(_)),
         renderInput("Other", "other", "text", false, UpdateOther(_)), 
         button(`type` := "button", onClick(AttemptPostJob))("Post Job")
@@ -116,6 +123,9 @@ case class PostJobPage(
 
     def setSuccessStatus(message: String): Page =
         this.copy(status = Some(Page.Status(message, Page.StatusKind.SUCCESS)))
+
+    private def parseNumber(s: String) = 
+        Try(s.toInt).getOrElse(0)
     
     // UI
     private def renderInvalidPage = 
@@ -139,7 +149,8 @@ object PostJobPage {
     case class UpdateCurrency(currency: String) extends Msg
     case class UpdateCountry(country: String) extends Msg
     case class UpdateTags(tags: String) extends Msg
-    //case class UpdateImage(image: String) extends Msg
+    case class UpdateImageFile(maybeFile: Option[File]) extends Msg
+    case class UpdateImage(maybeImage: Option[String]) extends Msg
     case class UpdateSeniority(seniority: String) extends Msg
     case class UpdateOther(other: String) extends Msg
     case object AttemptPostJob extends Msg
@@ -205,5 +216,22 @@ object PostJobPage {
                     other
                 )
             )
+
+        def loadFile(maybeFile: Option[File]) =
+            Cmd.Run[IO, Option[String], Msg](
+                // run effect that retusn a Option[String]
+                // Option[File] => Option[String]
+                // traverse: Option[File].traverse(file => IO[String]) => IO[Option[String]]
+                maybeFile.traverse { file =>
+                    IO.async_ { cb => 
+                        // create a reader
+                        val reader = new FileReader
+                        // set the onload
+                        reader.onload = _ => cb(Right(reader.result.toString))
+                        // trigger the reader
+                        reader.readAsDataURL(file)
+                    }
+                }
+            )(UpdateImage(_))
     }
 }
