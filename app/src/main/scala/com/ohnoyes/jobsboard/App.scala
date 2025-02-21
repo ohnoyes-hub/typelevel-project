@@ -65,7 +65,6 @@ class App extends TyrianApp[App.Msg, App.Model]{
     override def view(model: Model): Html[Msg] = // virtual dom
         div(
             Header.view(),
-            model.page.view(),
-            div(model.session.email.getOrElse("Uauthenticated")),
+            model.page.view()
         )
 }
