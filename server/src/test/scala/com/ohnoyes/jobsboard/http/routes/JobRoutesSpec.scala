@@ -54,10 +54,14 @@ class JobRoutesSpec
         override def delete(id: UUID): IO[Int] = 
             if (id == AwesomeJobUuid) IO.pure(1)
             else IO.pure(0)
+
+        override def possibleFilters(): IO[JobFilter] = IO(defaultFiler)
     }   
 
     given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
     val jobRoutes: HttpRoutes[IO] = JobsRoutes[IO](jobs).routes // what is being tested
+
+    val defaultFiler: JobFilter = JobFilter(companies = List("Awesome Company"))
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////        
     // tests
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +170,17 @@ class JobRoutesSpec
             } yield {
                 responseOk.status shouldBe Status.Ok
                 responseInvalid.status shouldBe Status.NotFound
+            }
+        }
+
+        "should surface all possible filters" in {
+            for {
+                response <- jobRoutes.orNotFound.run(
+                    Request(method = Method.GET, uri = uri"/jobs/filters")
+                )
+                filter <- response.as[JobFilter]
+            } yield {
+                filter shouldBe defaultFiler
             }
         }
     }
