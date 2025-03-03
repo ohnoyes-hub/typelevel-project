@@ -137,7 +137,7 @@ class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) exten
                 Fragments.or(tags.toList.map(tag => fr"$tag=any(tags)"): _*)
             ),
             filter.maxSalary.map(maxSalary => fr"salaryHi > $maxSalary"),
-            filter.remote.some.map(remote => fr"remote = $remote")
+            filter.remote.some.filter(identity).map(remote => fr"remote = $remote")
         )
         val paginationFragment: Fragment =
             fr"ORDER BY id LIMIT ${pagination.limit} OFFSET ${pagination.offset}"
