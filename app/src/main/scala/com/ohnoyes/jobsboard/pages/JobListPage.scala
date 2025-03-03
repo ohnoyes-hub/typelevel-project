@@ -39,10 +39,7 @@ final case class JobListPage(
     }
     override def view(): Html[App.Msg] = 
         div(`class` := "job-list-page")(
-            
-            div(`class` := "filter-panel")(
-                filterPanel.view()
-            ),
+            filterPanel.view(),
             div(`class` := "jobs-container")(
                 jobs.map(renderJob) ++ maybeRenderLoadMore
             )
