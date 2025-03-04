@@ -9,10 +9,18 @@ import io.circe.generic.auto.*
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.job.*
+import cats.syntax.group
+import org.scalajs.dom.HTMLInputElement
+import tyrian.cmds.Logger
 
 final case class FilterPanel(
     possibleFilters: JobFilter = JobFilter(),
-    maybeError: Option[String] = None
+    selectedFilters: Map[String, Set[String]] = Map(),
+    maybeError: Option[String] = None,
+    maxSalary: Int = 0,
+    remote: Boolean = false,
+    dirty: Boolean = false, // flag for any input
+    filterAction: Map[String, Set[String]] => App.Msg = _ => App.NoOp
 ) extends Component[App.Msg, FilterPanel] {
     import FilterPanel.*
 
@@ -21,17 +29,58 @@ final case class FilterPanel(
         Commands.getFilters
 
     override def update(msg: App.Msg): (FilterPanel, Cmd[IO, App.Msg]) = msg match {
+        case TriggerFilter => 
+            (this.copy(dirty = false), Cmd.Emit(filterAction(selectedFilters)))
         case SetPossibleFilters(possibleFilters) => 
             (this.copy(possibleFilters = possibleFilters), Cmd.None)
         case FilterPanelError(e) => 
             (this.copy(maybeError = Some(e)), Cmd.None)
+        // content
+        case UpdateSalaryInput(s) =>
+            (this.copy(maxSalary = s, dirty = true), Cmd.None)
+        case UpdateRemote(remote) => 
+            (this.copy(remote = remote, dirty = true), Cmd.None)
+        case UpdateValueChecked(groupName, value, checked) => 
+            val oldGroup = selectedFilters.getOrElse(groupName, Set())
+            val newGroup = if (checked) oldGroup + value else oldGroup - value
+            val newGroups = selectedFilters + (groupName -> newGroup)
+            (
+                this.copy(selectedFilters = newGroups, dirty = true), 
+                Logger.consoleLog[IO](s"Filters: $newGroups")
+            )
         case _ => (this, Cmd.None)
     }
+    /* 
+    Salary
 
+        above _________ (currency)
+
+    Locations
+    - Amsterdam
+    - NYC
+    - ...
+
+    Coutries
+    - ...
+    - ...
+
+    Seniorities
+    - 
+    - 
+
+    Remote ___
+     */
     override def view(): Html[App.Msg] = 
         div(`class` := "filter-panel")(
             maybeRenderError(),
-            div(possibleFilters.toString)
+            renderSalaryFilter(),
+            renderRemoteCheckbox(),
+            renderCheckboxGroup("Companies", possibleFilters.companies),
+            renderCheckboxGroup("Locations", possibleFilters.locations),
+            renderCheckboxGroup("Countries", possibleFilters.countries),
+            renderCheckboxGroup("Tags", possibleFilters.tags),
+            renderCheckboxGroup("Seniorities", possibleFilters.seniorities),
+            renderApplyButton()
         )
 
     //////////////////////////////////////////////////////////////////////
@@ -43,12 +92,83 @@ final case class FilterPanel(
             div(`class` := "filter-panel-error")(e)
         }
         .getOrElse(div())
+
+    private def renderSalaryFilter() =
+        div(`class` := "filter-group")(
+            h6(`class` := "filter-group-header")("Salary"),
+            div(`class` := "filter-group-content")(
+                label(`for` := "filter-salary")("above (local currency)"),
+                input(
+                    `type` := "number",
+                    id := "filter-salary",
+                    onInput(s => UpdateSalaryInput(if (s.isEmpty) 0 else s.toInt))
+                )
+            )
+        )
+
+    private def renderRemoteCheckbox() =
+        div(`class` := "filter-group-content")(
+            label(`for` := "filter-checkbox")("Remote"),
+            input(
+                `type` := "checkbox",
+                id := s"filter-checkbox",
+                checked(remote),
+                onEvent(
+                    "change",
+                    event => {
+                        val checkbox = event.target.asInstanceOf[HTMLInputElement]
+                        UpdateRemote(checkbox.checked)
+                    }
+                )
+            )
+        )
+    
+    private def renderCheckboxGroup(groupName: String, possibleValues: List[String]) = {
+        val selectedValues = selectedFilters.get(groupName).getOrElse(Set())
+        div(`class` := "filter-group")(
+            h6(`class` := "filter-group-header")(groupName),
+            div(`class` := "filter-group-content")(
+                possibleValues.map(value => renderCheckbox(groupName, value, selectedValues))
+            )
+        )
+    }
+    
+    private def renderCheckbox(groupName: String, value: String, selectedValues: Set[String]) =
+        div(`class` := "filter-group-content")(
+            label(`for` := s"filter-$groupName-$value")(value),
+            input(
+                `type` := "checkbox",
+                id := s"filter-$groupName-$value",
+                checked(selectedValues.contains(value)),
+                onEvent(
+                    "change",
+                    event => {
+                        // send message to insert value as checked value inside groupname's Set into the map
+                        val checkbox = event.target.asInstanceOf[HTMLInputElement]
+                        UpdateValueChecked(groupName, value, checkbox.checked)
+                    }
+                )
+            )
+        )
+        
+    private def renderApplyButton() =
+        button(
+            `type` := "button",
+            disabled(!dirty),
+            onClick(TriggerFilter)
+        ) ("FILTER")
+
 }
 
 object FilterPanel {
     trait Msg extends App.Msg
+    case object TriggerFilter extends Msg
     case class FilterPanelError(error: String) extends Msg
     case class SetPossibleFilters(possibleFilters: JobFilter) extends Msg
+    // content
+    case class UpdateSalaryInput(salary: Int) extends Msg
+    case class UpdateValueChecked(groupName: String, value: String, checked: Boolean) extends Msg
+    case class UpdateRemote(remote: Boolean) extends Msg
 
     object Endpoints {
         val getFilters = new Endpoint[Msg] {
