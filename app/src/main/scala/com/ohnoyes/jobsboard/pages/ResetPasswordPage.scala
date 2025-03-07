@@ -10,6 +10,7 @@ import io.circe.generic.auto.*
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.auth.*
+import com.ohnoyes.jobsboard.components.*
 
 // email, token, new password + button
 final case class ResetPasswordPage(
@@ -49,7 +50,7 @@ final case class ResetPasswordPage(
         renderInput("Token", "token", "text", true, UpdateToken(_)),
         renderInput("Password", "password", "password", true, UpdatePassword(_)),
         button(`type` := "button", onClick(AttemptResetPassword))("Reset Password"),
-        renderAuxLink(Page.Urls.FORGOT_PASSWORD, "Oh, no token yet?")
+        Anchors.renderSimpleNavLink("Oh, no token yet?", Page.Urls.FORGOT_PASSWORD)
     )
 
     //////////////////////////////////////////////////////////////////////

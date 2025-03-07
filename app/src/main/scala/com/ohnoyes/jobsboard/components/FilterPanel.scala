@@ -71,7 +71,7 @@ final case class FilterPanel(
     Remote ___
      */
     override def view(): Html[App.Msg] = 
-        div(`class` := "filter-panel")(
+        div(`class` := "filter-panel-container")(
             maybeRenderError(),
             renderSalaryFilter(),
             renderRemoteCheckbox(),

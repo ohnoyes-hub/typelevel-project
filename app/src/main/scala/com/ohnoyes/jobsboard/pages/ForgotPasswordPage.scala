@@ -8,6 +8,7 @@ import io.circe.generic.auto.*
 
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.common.*
+import com.ohnoyes.jobsboard.components.*
 import com.ohnoyes.jobsboard.domain.auth.*
 
 final case class ForgotPasswordPage(email: String = "", status: Option[Page.Status] = None) extends FormPage("Reset Password", status) {
@@ -32,7 +33,7 @@ final case class ForgotPasswordPage(email: String = "", status: Option[Page.Stat
     override protected def renderFormContent(): List[Html[App.Msg]] = List(
         renderInput("Email", "email", "text", true, UpdateEmail(_)),
         button(`type` := "button", onClick(AttemptResetPassword))("Send Reset Token"),
-        renderAuxLink(Page.Urls.RESET_PASSWORD, "Have a reset token?")
+        Anchors.renderSimpleNavLink("Have a reset token?", Page.Urls.RESET_PASSWORD)
     ) 
 
     //////////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@ import com.ohnoyes.jobsboard.core.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.auth.* 
 import com.ohnoyes.jobsboard.core.Session
+import com.ohnoyes.jobsboard.components.*
 
 import com.ohnoyes.jobsboard.*
 
@@ -50,7 +51,7 @@ final case class LoginPage(
         renderInput("Email", "email", "email", true, UpdateEmail(_)),
         renderInput("Password", "password", "password", true, UpdatePassword(_)),
         button(`type` := "button", onClick(AttempLogin))("Login"),
-        renderAuxLink(Page.Urls.FORGOT_PASSWORD, "Forgot Password?")
+        Anchors.renderSimpleNavLink("Forgot Password?", Page.Urls.FORGOT_PASSWORD)
     )
 
     //////////////////////////////////////////////////////////////////////

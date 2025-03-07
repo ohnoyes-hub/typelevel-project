@@ -15,6 +15,9 @@ object Page {
         case SUCCESS, ERROR, LOADING
     }
     case class Status(message: String, kind: StatusKind)
+    object Status {
+        val LOADING = Status("Loading...", StatusKind.LOADING)
+    }
 
     object Urls {
         val LOGIN = "/login"
@@ -27,6 +30,7 @@ object Page {
         val HOME = "/"
         val JOBS = "/jobs"
         val HASH = "#"
+        def JOB(id: String) = s"/jobs/$id"
     }
 
     import Urls.*
