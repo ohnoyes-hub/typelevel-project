@@ -11,27 +11,52 @@ import com.ohnoyes.jobsboard.pages.*
 import com.ohnoyes.jobsboard.components.*
 
 object Header {
+    //     <!--  ================ START NAVBAR =================  -->
+                        //         <li class="nav-item">
+                        //             <a class="nav-link jvm-item Home active-item" href="index.html">Home</a>
+
+                        //         </li>
+
 
     // public API
     def view() = 
-        div(`class` := "header-container")(
-            renderLogo(),
-            div(`class` := "header-nav")(
-                ul(`class`:= "header-links")(
-                    renderNavLinks()
+        div(`class`:="container-fluid p-0")(
+            div(`class`:="jvm-nav")(
+                div(`class`:="container")(
+                    nav(`class`:="navbar navbar-expand-lg navbar-light JVM-nav")(
+                        div(`class`:="container")(
+                            renderLogo(),
+                            button(
+                                `class`:="navbar-toggler", 
+                                `type`:="button", 
+                                attribute("data-bs-toggle", "collapse"),
+                                attribute("data-bs-target","#navbarNav"),
+                                attribute("aria-controls","navbarNav"),
+                                attribute("aria-expanded","false"),
+                                attribute("aria-label","Toggle navigation")
+                            )(
+                                span(`class` := "navbar-toggler-icon")()
+                            ),
+                            div(`class` := "collapse navbar-collapse", id := "navbarNav")(
+                                ul(`class`:= "navbar-nav ms-auto menu align-center expanded text-center SMN_effect-3 ")(
+                                    renderNavLinks()
+                                    )
+                                )
+                        )       
                     )
                 )
-                
+            )
         )
 
     // private API
     @js.native
     @JSImport("/static/img/logo.png", JSImport.Default)
     private val logoImage: String = js.native
-
+    
     private def renderLogo() = 
         a(
             href := "/", 
+            `class` := "navbar-brand",
             onEvent(
                 "click", 
                 e => {
@@ -43,24 +68,24 @@ object Header {
             img(
                 `class` := "home-logo",
                 src := logoImage,
-                alt := "OhNoYes"
+                alt := "Ohnoyes"
             )
         )
 
     private def renderNavLinks(): List[Html[App.Msg]] = {
         val constantLinks = List(
-            Anchors.renderSimpleNavLink("Jobs", Page.Urls.JOBS),
-            Anchors.renderSimpleNavLink("Post Job", Page.Urls.POST_JOB)
+            renderSimpleNavLink("Jobs", Page.Urls.JOBS),
+            renderSimpleNavLink("Post Job", Page.Urls.POST_JOB)
         )
         
         val unauthedLinks = List(
-            Anchors.renderSimpleNavLink("Login", Page.Urls.LOGIN),
-            Anchors.renderSimpleNavLink("Signup", Page.Urls.SIGNUP)
+            renderSimpleNavLink("Login", Page.Urls.LOGIN),
+            renderSimpleNavLink("Signup", Page.Urls.SIGNUP)
         )
 
         val authedLinks = List(
-            Anchors.renderSimpleNavLink("Profile", Page.Urls.PROFILE),
-            Anchors.renderNavLink("Logout", Page.Urls.HASH)(_ => Session.Logout)
+            renderSimpleNavLink("Profile", Page.Urls.PROFILE),
+            renderNavLink("Logout", Page.Urls.HASH)(_ => Session.Logout)
         )
 
         constantLinks ++ (
@@ -68,4 +93,13 @@ object Header {
             else unauthedLinks
         )
     }
+
+    private def renderSimpleNavLink(text: String, location: String) = 
+        renderNavLink(text, location)(Router.ChangeLocation(_))
+
+    private def renderNavLink(text: String, location: String)(location2msg: String => App.Msg) = 
+        li(`class` := "nav-item")(
+            Anchors.renderNavLink(text, location,"nav-link jvm-item Home active-item")(location2msg)
+        )
+
 }

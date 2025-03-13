@@ -11,11 +11,11 @@ object Anchors {
         renderNavLink(text, location)(Router.ChangeLocation(_))
 
 
-    def renderNavLink(text: String, location: String)(location2msg: String => App.Msg) = 
+    def renderNavLink(text: String, location: String, cssClass: String = "")(location2msg: String => App.Msg) = 
         li(`class` := "nav-item")(
             a(
                 href := location, 
-                `class` := "nav-link", 
+                `class` := cssClass, 
                 onEvent(
                     "click", 
                     e => {
