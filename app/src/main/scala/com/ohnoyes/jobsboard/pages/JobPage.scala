@@ -13,6 +13,7 @@ import laika.format.*
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.common.*
 import com.ohnoyes.jobsboard.domain.job.*
+import com.ohnoyes.jobsboard.components.*
 
 final case class JobPage(
     id: String,
@@ -52,40 +53,40 @@ final case class JobPage(
                 h1(s"${job.jobInfo.company} - ${job.jobInfo.title}")
             ),
             div(`class` := "job-overview")(
-                renderJobDetails(job)
+                JobComponents.renderJobSummary(job)
             ),
             renderJobDescription(job),
             a(href := job.jobInfo.externalUrl, `class` := "job-apply-action", target := "blank")("Apply")
         )
     
-    private def renderJobDetails(job: Job) = {
-        def renderDetail(value: String) =
-            if(value.isEmpty) div()
-            else li(`class` := "job-detail-item")(value)
+    // private def renderJobDetails(job: Job) = {
+    //     def renderDetail(value: String) =
+    //         if(value.isEmpty) div()
+    //         else li(`class` := "job-detail-item")(value)
             
-        val fullLocationString = job.jobInfo.country match {
-            case Some(country) => s"${job.jobInfo.location}, $country"
-            case None => job.jobInfo.location
-        }
+    //     val fullLocationString = job.jobInfo.country match {
+    //         case Some(country) => s"${job.jobInfo.location}, $country"
+    //         case None => job.jobInfo.location
+    //     }
 
-        val currency = job.jobInfo.currency.getOrElse("")
+    //     val currency = job.jobInfo.currency.getOrElse("")
 
-        val fullSalaryString = (job.jobInfo.salaryLow, job.jobInfo.salaryHi) match {
-            case (Some(low), Some(high)) => s"$currency $low - $high"
-            case (Some(low), None) => s"From $currency $low"
-            case (None, Some(high)) => s"Up to $currency $high"
-            case _ => "Not specified"
-        }
+    //     val fullSalaryString = (job.jobInfo.salaryLow, job.jobInfo.salaryHi) match {
+    //         case (Some(low), Some(high)) => s"$currency $low - $high"
+    //         case (Some(low), None) => s"From $currency $low"
+    //         case (None, Some(high)) => s"Up to $currency $high"
+    //         case _ => "Not specified"
+    //     }
 
-        div(`class` := "job-details")(
-            ul(`class` := "job-detail")(
-                renderDetail(fullLocationString),
-                renderDetail(fullSalaryString),
-                renderDetail(job.jobInfo.seniority.getOrElse("No level specified")),
-                renderDetail(job.jobInfo.tags.getOrElse(List()).mkString(", "))
-            )
-        )
-    }
+    //     div(`class` := "job-details")(
+    //         ul(`class` := "job-detail")(
+    //             renderDetail(fullLocationString),
+    //             renderDetail(fullSalaryString),
+    //             renderDetail(job.jobInfo.seniority.getOrElse("No level specified")),
+    //             renderDetail(job.jobInfo.tags.getOrElse(List()).mkString(", "))
+    //         )
+    //     )
+    // }
                 
     private def renderJobDescription(job: Job) = {
         val descriptionHtml = markdownTransformer.transform(job.jobInfo.description) match {
