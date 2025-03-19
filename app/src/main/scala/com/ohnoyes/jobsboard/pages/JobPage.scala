@@ -50,10 +50,9 @@ final case class JobPage(
             (setSuccessStatus("Yes, Job loaded").copy(maybeJob = Some(job)), Cmd.None)
         case _ => (this, Cmd.None)
     }
-    override def view(): Html[App.Msg] = renderNoJobPage()
-        // maybeJob match
-        // case Some(job) => renderJobPage(job)
-        // case None => renderNoJobPage()
+    override def view(): Html[App.Msg] = maybeJob match
+        case Some(job) => renderJobPage(job)
+        case None => renderNoJobPage()
     
         
 
