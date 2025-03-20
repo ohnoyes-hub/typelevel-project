@@ -9,6 +9,7 @@ import scala.concurrent.duration.FiniteDuration
 
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.core.*
+import com.ohnoyes.jobsboard.common.*
 
 abstract class FormPage(title: String, status: Option[Page.Status]) extends Page {
     // abstract API
@@ -21,27 +22,68 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
     override def view(): Html[App.Msg] = 
         renderForm()
 
+    //     <div class="container-fluid">
+    //   <div class="row">
+    //     <div class="col-md-5 p-0">
+    //       <!-- ============================ PICTURE SECTION START HERE ==================================== -->
+    //       <div class="logo">
+    //         <img src="img/singuplogo.jpg" alt="" />
+    //         <h3>Continue With JVM Job Board</h3>
+    //       </div>
+    //     </div>
+    //     <div class="col-md-7">
+    //       <!-- =================================== FORM SECTION START HERE ==================================== -->
+    //       <div class="form-section">
+    //         <div class="top-section">
+    //           <h1>Welcome to <span>JVM Board</span></h1>
+    //         </div>
+
+    //         <!-- ================= FRIST INPUT HERE ======================== -->
+    //         <div class="row">
+    //           <div class="col-md-12">
+    //             <div class="frist-input">
+    //               <label for="exampleInputEmail1" class="form-label"
+    //                 ><span>*</span>Username or Email Address</label
+    //               >
+    //               <input
+    //                 type="text"
+    //                 class="form-control"
+    //                 id="exampleInputEmail1"
+    //                 aria-describedby="emailHelp"
+    //                 placeholder="Email"
+    //               />
+
     // protected API
     protected def renderForm(): Html[App.Msg] =
-        div( `class` := "form-selection")(
-            // Ttile: Login
-            div(`class` := "top-section")(
-                h1(title)
+        div( `class` := "row")(
+            div(`class` := "col-md-5 p-0")(
+                // Left section
+                div(`class` := "logo")(
+                    img(src := Constants.logoImage)
+                )
             ),
-            // form
-            form(name := "signin", 
-            `class` := "form", 
-            id := "form",
-            onEvent("submit",
-                e => {
-                    e.preventDefault()
-                    App.NoOp
-                }))(
-                    renderFormContent()
-                ),
-                    status.map(s => div(s.message)).getOrElse(div())
+            div(`class` := "col-md-7")(
+                div(`class` := "form-section")(
+                    // Ttile: Login
+                    div(`class` := "top-section")(
+                        h1(span(title)),
+                        maybeRenderErrors()
+                    ),
+                    // form
+                    form(name := "signin", 
+                    `class` := "form", 
+                    id := "form",
+                    onEvent("submit",
+                        e => {
+                            e.preventDefault()
+                            App.NoOp
+                        }))(
+                            renderFormContent()
+                        )
+                )
             )
-    
+        )
+
     protected def renderInput(
         name: String, 
         uid: String, 
@@ -49,12 +91,16 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
         isRequired: Boolean, 
         onChange: String => App.Msg
     ) = 
-        div(`class` := "form=input")(
-            label(`for` := uid, `class` := "form-label")(
-                if (isRequired) span("*") else span(),
-                text(name)
-            ),
-            input(`type` := kind, `class` := "form-control", id := uid, onInput(onChange))
+        div(`class` := "row")(
+            div(`class` := "col-md-12")(
+                div(`class` := "form-input")(
+                    label(`for` := uid, `class` := "form-label")(
+                        if (isRequired) span("*") else span(),
+                        text(name)
+                    ),
+                    input(`type` := kind, `class` := "form-control", id := uid, onInput(onChange))
+                )
+            )
         )
 
     protected def renderImageUploadInput(
@@ -98,6 +144,10 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
     
 
     // private API
+    // UI
+    private def maybeRenderErrors() = 
+        status.map(s => div(s.message)).getOrElse(div())
+
     /* 
     check if the form is loaded(if it's present on the page)
     - document.getElementById("email") != null
@@ -105,6 +155,8 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
 
     use IO effects 
      */
+
+     // logic
     private def clearForm() = 
         Cmd.Run[IO, Unit, App.Msg] {
             // IO effect

@@ -51,7 +51,7 @@ final case class LoginPage(
         renderInput("Email", "email", "email", true, UpdateEmail(_)),
         renderInput("Password", "password", "password", true, UpdatePassword(_)),
         button(`type` := "button", onClick(AttempLogin))("Login"),
-        Anchors.renderSimpleNavLink("Forgot Password?", Page.Urls.FORGOT_PASSWORD)
+        Anchors.renderSimpleNavLink("Forgot Password?", Page.Urls.FORGOT_PASSWORD, "auth-link")
     )
 
     //////////////////////////////////////////////////////////////////////
