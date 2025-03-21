@@ -102,6 +102,24 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
                 )
             )
         )
+    
+    protected def renderToggle(
+        name: String, 
+        uid: String, 
+        isRequired: Boolean, 
+        onChange: String => App.Msg
+    ) = 
+        div(`class` := "row")(
+            div(`class` := "col-md-6 job")(
+                div(`class` := "form-check form-switch")(
+                    label(`for` := uid, `class` := "form-check-label")(
+                        if (isRequired) span("*") else span(),
+                        text(name)
+                    ),
+                    input(`type` := "checkbox", `class` := "form-check-input", id := uid, onInput(onChange))
+                )
+            )
+        )
 
     protected def renderImageUploadInput(
         name: String, 
@@ -109,44 +127,55 @@ abstract class FormPage(title: String, status: Option[Page.Status]) extends Page
         imgSrc: Option[String],
         onChange: Option[File] => App.Msg
     ) = 
-        div(`class` := "form=input")(
-            label(`for` := uid, `class` := "form-label")(name),
-            input(
-                `type` := "file", 
-                `class` := "form-control", 
-                id := uid,
-                accept := "image/*",
-                // multiple := "multiple", // to select multiple files
-                onEvent("change", e => {
-                    val imageInput = e.target.asInstanceOf[HTMLInputElement]
-                    val fileList = imageInput.files // FileList
-                    onChange(if (fileList.length > 0) Some(fileList(0)) else None)
-                    }
+        div(`class` := "row")(
+            div(`class` := "col-md-12")(
+                div(`class` := "form=input")(
+                    label(`for` := uid, `class` := "form-label")(name),
+                    input(
+                        `type` := "file", 
+                        `class` := "form-control", 
+                        id := uid,
+                        accept := "image/*",
+                        // multiple := "multiple", // to select multiple files
+                        onEvent("change", e => {
+                            val imageInput = e.target.asInstanceOf[HTMLInputElement]
+                            val fileList = imageInput.files // FileList
+                            onChange(if (fileList.length > 0) Some(fileList(0)) else None)
+                            }
+                        )
+                    )
+                    // ,img(
+                    //     id := "preview",
+                    //     src := imgSrc.getOrElse(""),
+                    //     alt := "Preview",
+                    //     width := "100",
+                    //     height := "100"
+                    // )
                 )
-            ),
-            img(
-                id := "preview",
-                src := imgSrc.getOrElse(""),
-                alt := "Preview",
-                width := "100",
-                height := "100"
             )
         )
     
     protected def renderTextArea(name: String, uid: String, isRequired: Boolean, onChange: String => App.Msg) =
-        div(`class` := "form=input")(
-            label(`for` := name, `class` := "form-label")(
-                if (isRequired) span("*") else span(),
-                text(name)
-            ),
-            textarea(`class` := "form-control", id := uid, onInput(onChange))("")
+        div(`class` := "row")(
+            div(`class` := "col-md-12")(
+                div(`class` := "form=input")(
+                    label(`for` := name, `class` := "form-label")(
+                        if (isRequired) span("*") else span(),
+                        text(name)
+                    ),
+                    textarea(`class` := "form-control", id := uid, onInput(onChange))("")
+                )
+            )
         )
     
 
     // private API
     // UI
     private def maybeRenderErrors() = 
-        status.map(s => div(s.message)).getOrElse(div())
+        status
+            .filter(s => s.kind == Page.StatusKind.ERROR && s.message.nonEmpty)
+            .map(s => div(`class` := "form-errors")(s.message))
+            .getOrElse(div())
 
     /* 
     check if the form is loaded(if it's present on the page)

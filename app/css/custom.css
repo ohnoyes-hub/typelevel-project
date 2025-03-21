@@ -142,6 +142,9 @@
 }
 
 .logo img {
+    position: sticky;
+    top: 0;
+    bottom: 0;
     margin: auto;
 }
 
@@ -161,6 +164,40 @@
     animation: animatedBG 15s ease infinite;
 }
 
+.auth-link {
+    display: block;
+    margin: 20px 0;
+}
+
+/* post job page */
+
+textarea.form-control {
+    min-height: 200px;
+    font-family: monospace;
+}
+
+.job {
+    padding: 0 12px;
+}
+
+.job label {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.form-errors {
+    border: 1px solid red;
+    padding: 10px;
+    border-radius: 5px;
+
+}
+
+.top-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 @keyframes animatedBG {
     0% {
         background-position: 0% 50%;
@@ -173,7 +210,3 @@
     }
 }
 
-.auth-link {
-    display: block;
-    margin: 20px 0;
-}
