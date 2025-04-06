@@ -27,7 +27,7 @@ import org.checkerframework.checker.units.qual.s
 import com.ohnoyes.jobsboard.logging.syntax.*
 
 
-class JobsRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (jobs: Jobs[F]) extends HttpValidationDsl[F] {
+class JobsRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (jobs: Jobs[F], stripe: Stripe[F]) extends HttpValidationDsl[F] {
 
     object OffsetQueryParam extends OptionalQueryParamDecoderMatcher[Int]("offset")
     object LimitQueryParam extends OptionalQueryParamDecoderMatcher[Int]("limit")
@@ -96,7 +96,20 @@ class JobsRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (jobs: Jobs[F
             }
     }
 
-    val unauthRoutes = allFiltersRoute <+> allJobsRoutes <+> findJobRoute
+    // Stripe endpoints
+    // POST /jobs/promoted { jobInfo}
+    private val promotedJobRoute: HttpRoutes[F] = HttpRoutes.of[F]{ 
+        case req @ POST -> Root / "promoted" => 
+            req.validate[JobInfo] { jobInfo =>
+                for {
+                    jobId <- jobs.create("TODO@email.com", jobInfo)
+                    session <- stripe.createCheckoutSession(jobId.toString, "TODO@email.com")
+                    resp <- session.map(sesh => Ok(sesh.getUrl())).getOrElse(NotFound())
+                } yield resp
+            }
+    }
+
+    val unauthRoutes = promotedJobRoute <+> allFiltersRoute <+> allJobsRoutes <+> findJobRoute
     val authRoutes = SecuredHandler[F].liftService(
         createJobRoute.restrictedTo(allRoles) |+|
         updateJobRoute.restrictedTo(allRoles) |+|
@@ -108,6 +121,6 @@ class JobsRoutes[F[_]: Concurrent: Logger: SecuredHandler] private (jobs: Jobs[F
 }
 
 object JobsRoutes {
-    def apply[F[_]: Concurrent: Logger: SecuredHandler](jobs: Jobs[F]) = 
-        new JobsRoutes[F](jobs)
+    def apply[F[_]: Concurrent: Logger: SecuredHandler](jobs: Jobs[F], stripe: Stripe[F]) = 
+        new JobsRoutes[F](jobs, stripe)
 }

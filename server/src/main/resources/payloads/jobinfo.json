@@ -2,7 +2,7 @@
     "company" : "ohnoyes",
     "title" : "Software engineer",
     "description" : "one last job",
-    "externalUrl" : "linkedin.com",
+    "externalUrl" : "https://linkedin.com",
     "remote" : false,
     "location" : "Amsterdam"
 }
