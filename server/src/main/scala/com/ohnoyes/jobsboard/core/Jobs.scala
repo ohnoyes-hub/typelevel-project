@@ -23,6 +23,7 @@ trait  Jobs[F[_]] {
     def all(filter: JobFilter, pagination: Pagination): F[List[Job]]
     def find(id: UUID): F[Option[Job]]
     def update(id: UUID, jobInfo: JobInfo): F[Option[Job]]
+    def activate(id: UUID): F[Int] // number of rows updated
     def delete(id: UUID): F[Int]
     def possibleFilters(): F[JobFilter]
 }
@@ -203,6 +204,16 @@ class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) exten
         .run
         .transact(xa)
         .flatMap(_ => find(id)) // return updated job
+
+    override def activate(id: UUID): F[Int] =
+        sql"""
+            UPDATE jobs
+            SET active = true
+            WHERE id = $id
+        """
+        .update
+        .run
+        .transact(xa)
         
     override def delete(id: UUID): F[Int] = 
         sql"""

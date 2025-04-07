@@ -8,8 +8,12 @@ import com.stripe.{Stripe => TheStripe}
 import com.stripe.model.checkout.Session
 import com.stripe.param.checkout.SessionCreateParams
 
+import scala.util.Try
+import scala.jdk.OptionConverters.*
+
 import com.ohnoyes.jobsboard.logging.syntax.*
 import com.ohnoyes.jobsboard.config.*
+import com.stripe.net.Webhook
 
 trait Stripe[F[_]] {
     /*
@@ -20,13 +24,14 @@ trait Stripe[F[_]] {
         4. User pays(credit card details,...)
         5. backend will be notified by Stripe (webhook)
             - test mode: use Stripe CLI to redirect the events to localhost:727/api/jobs/webhook..
-        6. Perform final operation on the job advert - set the active flag to false for that job id 
+        6. Perform final operation on the job advert - set the active flag to true for that job id 
 
     app -> http -> stripe -> redirect user
                           <- user pays stripe
     activate job <- webhook <- stripe
     */
     def createCheckoutSession(jobId: String, userEmail: String): F[Option[Session]]
+    def handleWebhookEvent[A](payload: String, signature: String, action: String => F[A]): F[Option[A]] 
 }
 
 class LiveStripe[F[_]: MonadThrow: Logger](
@@ -34,6 +39,7 @@ class LiveStripe[F[_]: MonadThrow: Logger](
     price: String,
     successUrl: String,
     cancelUrl: String,
+    webhookSecret: String
 ) extends Stripe[F] {
     // globally set constant
     TheStripe.apiKey = key
@@ -58,7 +64,7 @@ class LiveStripe[F[_]: MonadThrow: Logger](
               SessionCreateParams.LineItem.builder()
                 .setQuantity(1L) // 1 item
                 // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                .setPrice("price_1R9BofAZMbULBEb9IH1PWCD8") // need config
+                .setPrice(price) // need config
                 .build())
             .build()
             .pure[F]
@@ -66,6 +72,36 @@ class LiveStripe[F[_]: MonadThrow: Logger](
             .map(_.some)
             .logError(error => s"Oh no, checkout session creation failed: $error")
             .recover { case _ => None}
+    
+    override def handleWebhookEvent[A](payload: String, signature: String, action: String => F[A]): F[Option[A]] =
+        MonadThrow[F]
+            .fromTry(Try(Webhook.constructEvent(payload, signature, webhookSecret))) // TODO pass from config
+            .logError(error => s"Oh no, Stripe verfication failed---fake attempt?")
+            .flatMap { event =>
+                event.getType match {
+                    case "checkout.session.completed" => 
+                        event
+                            .getDataObjectDeserializer()
+                            .getObject() // java.util.Optional[deserialized]
+                            .toScala // convert to Option[deserialized]
+                            .map(_.asInstanceOf[Session]) // convert to Session
+                            .map(_.getClientReferenceId()) // Option[String] <-- stores my job id
+                            .map(action) // Option[F[A]] - perform the effect
+                            .sequence // F[Option[A]]
+                            .log({
+                                case None => s"Oh no, event ${event.getId()} not producing an effect -- check Stripe dashboard"
+                                case Some(_) => s"Stripe event ${event.getId()} handled successfully"
+                            },
+                            e => s"Oh no, webhook action failed: $e"
+                                )
+                    case _ => 
+                        //Logger[F].info(s"Got an event of type ${event.getType} - not handled") *> 
+                        None.pure[F]
+                }
+            }
+            .logError(error => s"Oh no, Stripe webhook event handling failed: $error")
+            .recover { case _ => None }
+        
 }
 
 object LiveStripe {
@@ -74,6 +110,7 @@ object LiveStripe {
             stripeConfig.key,
             stripeConfig.price,
             stripeConfig.successUrl,
-            stripeConfig.cancelUrl
+            stripeConfig.cancelUrl,
+            stripeConfig.webhookSecret
         ).pure[F]
 }
