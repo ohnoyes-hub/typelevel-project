@@ -10,6 +10,8 @@ import org.http4s.implicits.*
 import cats.effect.testing.scalatest.AsyncIOSpec
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
+import com.stripe.model.checkout.Session
+import com.stripe.param.checkout.SessionCreateParams
 
 import com.ohnoyes.jobsboard.domain.job.*
 import com.ohnoyes.jobsboard.domain.pagination.*
@@ -19,6 +21,7 @@ import com.ohnoyes.jobsboard.fixtures.*
 import java.util.UUID
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import java.{util => ju}
 
 
 class JobRoutesSpec 
@@ -51,6 +54,8 @@ class JobRoutesSpec
             if (id == AwesomeJobUuid) IO.pure(Some(UpdatedAwesomeJob))
             else IO.pure(None)
 
+        override def activate(id: UUID): IO[Int] = IO.pure(1)
+
         override def delete(id: UUID): IO[Int] = 
             if (id == AwesomeJobUuid) IO.pure(1)
             else IO.pure(0)
@@ -58,8 +63,22 @@ class JobRoutesSpec
         override def possibleFilters(): IO[JobFilter] = IO(defaultFiler)
     }   
 
+    val stripe: Stripe[IO] = new LiveStripe[IO](
+        "key",
+        "price",
+        "https://example.com/success",
+        "https://example.com/fail",
+        "secret"
+    ) {
+        override def createCheckoutSession(jobId: String, userEmail: String): IO[Option[Session]] = 
+            IO.pure(Some(Session.create(SessionCreateParams.builder().build())))
+
+        override def handleWebhookEvent[A](payload: String, signature: String, action: String => IO[A]): IO[Option[A]] =
+            IO.pure(None)
+    }
+
     given logger: Logger[IO] = Slf4jLogger.getLogger[IO]
-    val jobRoutes: HttpRoutes[IO] = JobsRoutes[IO](jobs).routes // what is being tested
+    val jobRoutes: HttpRoutes[IO] = JobsRoutes[IO](jobs, stripe).routes // what is being tested
 
     val defaultFiler: JobFilter = JobFilter(companies = List("Awesome Company"))
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////        

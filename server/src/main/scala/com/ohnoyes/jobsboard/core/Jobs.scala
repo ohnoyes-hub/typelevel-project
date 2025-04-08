@@ -95,6 +95,7 @@ class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) exten
                 other,
                 active
             FROM jobs
+            WHERE active = true
         """
         .query[Job]
         .to[List]
@@ -138,7 +139,9 @@ class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) exten
                 Fragments.or(tags.toList.map(tag => fr"$tag=any(tags)"): _*)
             ),
             filter.maxSalary.map(maxSalary => fr"salaryHi > $maxSalary"),
-            filter.remote.some.filter(identity).map(remote => fr"remote = $remote")
+            filter.remote.some.filter(identity).map(remote => fr"remote = $remote"),
+            fr"active = true".some // job flag
+
         )
         val paginationFragment: Fragment =
             fr"ORDER BY id LIMIT ${pagination.limit} OFFSET ${pagination.offset}"
@@ -175,6 +178,7 @@ class LiveJobs[F[_]: MonadCancelThrow: Logger] private (xa: Transactor[F]) exten
                 active
             FROM jobs
             WHERE id = $id
+            AND active = true
         """
         .query[Job]
         .option
