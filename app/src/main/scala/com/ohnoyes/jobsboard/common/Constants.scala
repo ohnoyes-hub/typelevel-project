@@ -22,6 +22,7 @@ object Constants {
         val resetPassword = s"$root/api/auth/recover"
         val changePassword = s"$root/api/auth/users/password"
         val postJob = s"$root/api/jobs/create"
+        val postJobPromoted = s"$root/api/jobs/promoted"
         val jobs = s"$root/api/jobs"
         val filters = s"$root/api/jobs/filters"
     }

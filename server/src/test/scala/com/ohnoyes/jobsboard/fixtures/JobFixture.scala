@@ -26,13 +26,14 @@ trait JobFixture {
       "Berlin",
       2000.some,
       3000.some,
-      "EUR".some,
+    "EUR".some,
       "Germany".some,
       Some(List("scala", "scala-3", "cats")),
       None,
       "Senior".some,
       None
-    )
+    ),
+    active = true
   )
 
   val InvalidJob = Job(
@@ -61,7 +62,8 @@ trait JobFixture {
       "http://www.awesome.com/logo.png".some,
       "Highest".some,
       "Some additional info".some
-    )
+    ),
+    active = true
   )
 
   val RockTheJvmNewJob = JobInfo(

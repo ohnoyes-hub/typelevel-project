@@ -73,4 +73,23 @@ object Endpoint {
                 case Status(code, message) if code >= 400 && code < 600 => 
                     errorCallback(s"Error: $message")
             }
+
+    def onResponseText[Msg](
+        valueCb: String => Msg,
+        errorCb: String => Msg
+    ): Response => Msg =
+        response => 
+            response.status match {
+                case Status(s, _) if s >= 200 && s < 300 =>
+                    valueCb(response.body)
+                case Status(s, _) if s >= 400 && s < 500 =>
+                    val json = response.body
+                    val parsed = parse(json).flatMap(_.hcursor.get[String]("error"))
+                    parsed match {
+                        case Left(e) => errorCb(s"Oh no: $e")
+                        case Right(error) => errorCb(error)
+                    }
+                case _ => 
+                    errorCb("Oh no, something went wrong from the server")
+            }
 }
