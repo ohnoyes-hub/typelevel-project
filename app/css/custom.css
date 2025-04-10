@@ -1,5 +1,26 @@
 /* Custom CSS */
 
+/* app */
+
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.footer {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 10px 0;
+    margin-top: auto;
+}
+
+.section-1 {
+    margin-bottom: 10px;
+}
+
 .home-logo {
     width: 50px;
     height: 50px;
@@ -7,6 +28,27 @@
 
 .aux-link {
     display: block;
+}
+
+/* job list page */
+
+.job-list-hero {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: 200px;
+    background-size: 300%;
+    background-image: 
+        linear-gradient(
+            -45deg, rgb(31, 117, 197) 0%, rgb(119, 43, 43) 25%, rgb(22, 87, 32) 50%, rgb(190, 174, 27)
+        );
+    animation: animatedBG 15s ease infinite;
+    max-width: 100%;
+}
+
+.job-list-title {
+    color: white;
+    margin: auto;
 }
 
 .jobs-container {

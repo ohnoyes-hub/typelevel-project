@@ -45,6 +45,9 @@ final case class JobListPage(
     }
     def view(): Html[App.Msg] =
     section(`class` := "section-1")(
+      div(`class` := "container job-list-hero")(
+        h1(`class` := "job-list-title")("ohnoyes Job Board Project")
+      ),
       div(`class` := "container")(
         div(`class` := "row jvm-recent-jobs-body")(
           div(`class` := "col-lg-4")(

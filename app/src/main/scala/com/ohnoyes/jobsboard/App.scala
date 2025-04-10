@@ -63,12 +63,22 @@ class App extends TyrianApp[App.Msg, App.Model]{
     }
 
     override def view(model: Model): Html[Msg] = // virtual dom
-        div(
+        div(`class` := "app")(
             Header.view(),
             main(
                 div(`class` := "container-fluid")(
                     model.page.view()
                 )
-            )
+            ),
+            Footer.view()
         )
 }
+
+/* TODO:
+    - footer
+    - not found page
+    - jab picture default
+    - post job page button - styles and price
+    - render errors & success status nicely in FormPage and JobListPage
+    - automatic image resizing
+*/
