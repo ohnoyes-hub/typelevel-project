@@ -6,6 +6,7 @@ import tyrian.Html.*
 import com.ohnoyes.jobsboard.*
 import com.ohnoyes.jobsboard.pages.Page
 import com.ohnoyes.jobsboard.domain.job.*
+import com.ohnoyes.jobsboard.common.*
 
 
 object JobComponents {
@@ -13,11 +14,7 @@ object JobComponents {
     def card(job: Job) =
         div(`class` := "jvm-recent-jobs-cards")(
             div(`class`:= "jvm-recent-jobs-card-img")(
-                img(
-                    `class` := "img-fluid",
-                    src := job.jobInfo.image.getOrElse(""),
-                    alt := job.jobInfo.title
-                )
+                renderJobImage(job)
             ),
             div(`class` := "jvm-recent-jobs-card-contents")(
                 h5(
@@ -59,6 +56,13 @@ object JobComponents {
         div(`class` := "job-detail")(
             i(`class` := s"fa fa-$icon job-detail-icon")(),
             p(`class` := "job-detail-value")(value)
+        )
+    
+    def renderJobImage(job: Job) =
+        img(
+            `class` := "img-fluid",
+            src := job.jobInfo.image.getOrElse(Constants.jobImagePlaceholder),
+            alt := job.jobInfo.title
         )
 
     // private

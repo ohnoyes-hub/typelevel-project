@@ -18,6 +18,7 @@ import com.ohnoyes.jobsboard.components.*
 import scala.scalajs.* 
 import scala.scalajs.js.* // js.native
 import scala.scalajs.js.annotation.* // JSName
+import com.ohnoyes.jobsboard.components.JobComponents.renderJobImage
 
 @js.native
 @JSGlobal()
@@ -66,11 +67,7 @@ final case class JobPage(
             div(`class` := "row jvm-jobs-details-top-card")(
                 div(`class` := "col-md-12 p-0")(
                     div(`class` := "jvm-jobs-details-card-profile-img")(
-                        img(
-                        `class` := "img-fluid",
-                        src     := job.jobInfo.image.getOrElse(""),
-                        alt     := job.jobInfo.title
-                        )
+                        renderJobImage(job)
                     ),
                     div(`class` := "jvm-jobs-details-card-profile-title")(
                         h1(s"${job.jobInfo.company} - ${job.jobInfo.title}"),

@@ -51,7 +51,7 @@ class JobsSpec
       transactor.use { xa =>
         val program = for {
             jobs <- LiveJobs[IO](xa)
-            retrived <- jobs.all()
+            retrived <- jobs.all().compile.toList
         } yield retrived
 
         program.asserting(_ shouldBe List(AwesomeJob))

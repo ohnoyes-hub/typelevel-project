@@ -227,11 +227,20 @@ textarea.form-control {
     font-weight: 600;
 }
 
-.form-errors {
+.page-status-errors {
     border: 1px solid red;
     padding: 10px;
+    color: red;
     border-radius: 5px;
+    margin: 10px;
+}
 
+.page-status-success {
+    border: 1px solid green;
+    padding: 10px;
+    color: green;
+    border-radius: 5px;
+    margin: 10px;
 }
 
 .top-section {
@@ -244,6 +253,11 @@ textarea.form-control {
     display: flex;
     align-items: center;
     flex-direction: column;
+}
+
+.form-submit-btn {
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 @keyframes animatedBG {
