@@ -59,11 +59,9 @@ object HttpApi {
                     ref.modify(store => (store - id, ()))
             }
         }
-        // TODO
 
         // 3. hash key
         val keyF = HMACSHA256.buildKey[F](securityConfig.secret.getBytes("UTF-8")) 
-        // TODO move to config
 
         // 4. authenticator
         for { // val authenticatorF: F[Authenticator[F]] = 

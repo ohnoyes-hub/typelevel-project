@@ -102,7 +102,6 @@ object validators {
         val validUserEmail = validateRequired(newUserInfo.email, "email")(_.nonEmpty)
             .andThen(e => validatedEmail(e, "email"))
 
-        // TODO: add more password validation (restrictions)
         val validUserPassword = validateRequired(newUserInfo.password, "password")(_.nonEmpty)
         // ^^ 
 

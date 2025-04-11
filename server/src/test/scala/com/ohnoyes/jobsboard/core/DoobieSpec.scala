@@ -9,7 +9,7 @@ import doobie.hikari.HikariTransactor
 
 trait DoobieSpec {
 
-    // TODO: implemented by whatever test case interacts with the DB
+    // implemented by whatever test case interacts with the DB
     val initScript: String
     
     // simulate a database

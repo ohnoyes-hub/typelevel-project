@@ -59,7 +59,6 @@ class App extends TyrianApp[App.Msg, App.Model]{
             // update the page
             val (newPage, cmd) = model.page.update(msg)
             (model.copy(page = newPage), cmd)
-        //case _ =>  (model, Cmd.None) // TODO to check external redirects as weel
     }
 
     override def view(model: Model): Html[Msg] = // virtual dom
@@ -73,12 +72,3 @@ class App extends TyrianApp[App.Msg, App.Model]{
             Footer.view()
         )
 }
-
-/* TODO:
-    - footer
-    - not found page
-    - jab picture default
-    - post job page button - styles and price
-    - render errors & success status nicely in FormPage and JobListPage
-    - automatic image resizing
-*/

@@ -29,8 +29,7 @@ final case class Session(email: Option[String] = None, token: Option[String] = N
         case LogoutSuccess | InvalidateToken =>
             (this.copy(email=None, token=None), 
             Commands.clearAllSessionCookies |+| Cmd.Emit(Router.ChangeLocation(Page.Urls.HOME)))
-        // TODO case LogoutError =>
-        // check token action
+
         case CheckToken => 
             (this, Commands.checkToken)
         case KeepToken => 
